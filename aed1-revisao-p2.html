@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AED I: revisão para a P2 em C</title>
+<style>
+:root {
+  color-scheme: dark;
+  --fundo: #121926;
+  --painel: #18212f;
+  --painel-2: #1f2a3b;
+  --linha: #2c3a50;
+  --texto: #dde4ee;
+  --suave: #93a1b6;
+  --ambar: #f2b84b;
+  --verde: #62cdb9;
+  --coral: #f07a72;
+  --azul: #7fb2f0;
+  --codigo-fundo: #0e141e;
+  --c-com: #7d8ba0;
+  --c-kw: #f2b84b;
+  --c-tipo: #62cdb9;
+  --c-fn: #7fb2f0;
+  --c-str: #e59a7a;
+  --c-num: #c9a4f0;
+  --c-pre: #f07a72;
+  --mono: ui-monospace, "JetBrains Mono", "Cascadia Code", "Fira Code", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  --sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --lateral: 286px;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --fundo: #f4f6f9;
+  --painel: #ffffff;
+  --painel-2: #e9edf3;
+  --linha: #cfd7e2;
+  --texto: #1a2433;
+  --suave: #556477;
+  --ambar: #8a5a00;
+  --verde: #0b7566;
+  --coral: #b3362e;
+  --azul: #1f5fb0;
+  --codigo-fundo: #fbfcfd;
+  --c-com: #6b7889;
+  --c-kw: #8a5a00;
+  --c-tipo: #0b7566;
+  --c-fn: #1f5fb0;
+  --c-str: #a2472a;
+  --c-num: #6b3fb0;
+  --c-pre: #b3362e;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+body {
+  margin: 0; background: var(--fundo); color: var(--texto);
+  font-family: var(--sans); font-size: 16px; line-height: 1.6;
+}
+a { color: var(--azul); }
+:focus-visible { outline: 2px solid var(--ambar); outline-offset: 2px; border-radius: 3px; }
+code, kbd, pre { font-family: var(--mono); }
+p code, li code, td code, th code, summary code, figcaption code {
+  background: var(--painel-2); padding: 1px 5px; border-radius: 4px; font-size: .88em; white-space: nowrap;
+}
+kbd { border: 1px solid var(--linha); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: .8em; background: var(--painel); }
+
+/* ---------- barra lateral ---------- */
+.lateral {
+  position: fixed; inset: 0 auto 0 0; width: var(--lateral); z-index: 30;
+  background: var(--painel); border-right: 1px solid var(--linha);
+  display: flex; flex-direction: column; overflow-y: auto; padding: 22px 16px 16px;
+}
+.marca { font-family: var(--mono); font-weight: 700; font-size: 1.05rem; letter-spacing: -.01em; }
+.marca span { color: var(--ambar); }
+.submarca { color: var(--suave); font-size: .82rem; margin: 2px 0 16px; }
+.atalhos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 18px; }
+.btn {
+  font: inherit; font-size: .82rem; color: var(--texto); background: var(--painel-2);
+  border: 1px solid var(--linha); border-radius: 6px; padding: 7px 8px; cursor: pointer; text-align: center;
+}
+.btn:hover { border-color: var(--ambar); }
+.btn.forte { background: var(--ambar); color: #1a1405; border-color: var(--ambar); font-weight: 600; }
+:root[data-theme="light"] .btn.forte { color: #fff; }
+.indice { list-style: none; margin: 0; padding: 0; }
+.indice a {
+  display: flex; gap: 10px; align-items: baseline; padding: 7px 8px; border-radius: 6px;
+  color: var(--suave); text-decoration: none; font-size: .9rem; line-height: 1.3; border-left: 2px solid transparent;
+}
+.indice a b { font-family: var(--mono); color: var(--suave); font-weight: 600; min-width: 1ch; }
+.indice a:hover { color: var(--texto); background: var(--painel-2); }
+.indice a.ativo { color: var(--texto); background: var(--painel-2); border-left-color: var(--ambar); }
+.indice a.ativo b { color: var(--ambar); }
+.rodape-lateral { margin-top: auto; padding-top: 16px; color: var(--suave); font-size: .76rem; line-height: 1.5; }
+.abre-menu { display: none; }
+
+/* ---------- conteúdo ---------- */
+main { margin-left: var(--lateral); padding: 36px 40px 120px; }
+.coluna { max-width: 880px; margin: 0 auto; }
+.abertura h1 { font-family: var(--mono); font-size: clamp(1.6rem, 3.4vw, 2.3rem); line-height: 1.15; margin: 0 0 10px; letter-spacing: -.02em; }
+.abertura > p { color: var(--suave); max-width: 64ch; margin: 0 0 22px; }
+.regras { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.regra { background: var(--painel); border: 1px solid var(--linha); border-radius: 8px; padding: 14px 16px; }
+.regra h2 { all: unset; display: block; font-family: var(--mono); font-weight: 700; font-size: .95rem; margin-bottom: 6px; }
+.regra.papel h2 { color: var(--ambar); }
+.regra.juiz h2 { color: var(--verde); }
+.regra ul { margin: 0; padding-left: 18px; font-size: .92rem; }
+.aviso { margin-top: 20px; font-size: .88rem; color: var(--suave); border-left: 3px solid var(--azul); padding: 4px 0 4px 12px; }
+
+section.mod { padding-top: 56px; }
+.mod > h2 {
+  font-family: var(--mono); font-size: 1.45rem; line-height: 1.25; margin: 0 0 6px;
+  display: flex; gap: 14px; align-items: center; letter-spacing: -.01em;
+}
+.mod > h2 .num {
+  flex: none; width: 38px; height: 38px; display: grid; place-items: center;
+  border: 2px solid var(--ambar); color: var(--ambar); border-radius: 8px; font-size: 1.1rem;
+}
+.mod > .lide { color: var(--suave); margin: 0 0 8px; max-width: 70ch; }
+.mod h3 { font-family: var(--mono); font-size: 1.05rem; margin: 34px 0 8px; padding-top: 14px; border-top: 1px solid var(--linha); }
+.mod h4 { font-size: .98rem; margin: 22px 0 6px; }
+.mod p, .mod li { max-width: 76ch; }
+.mod ul, .mod ol { padding-left: 22px; }
+.mod li { margin: 3px 0; }
+
+/* ---------- código e diagramas ---------- */
+.bloco { margin: 14px 0 18px; border: 1px solid var(--linha); border-radius: 8px; overflow: hidden; background: var(--codigo-fundo); }
+.bloco-topo {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 5px 8px 5px 14px; background: var(--painel); border-bottom: 1px solid var(--linha);
+  font-family: var(--mono); font-size: .78rem; color: var(--suave);
+}
+.bloco-topo button { font: inherit; color: var(--suave); background: none; border: 1px solid var(--linha); border-radius: 5px; padding: 2px 9px; cursor: pointer; }
+.bloco-topo button:hover { color: var(--texto); border-color: var(--ambar); }
+pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.55; tab-size: 4; }
+pre.ascii { color: var(--texto); background: var(--codigo-fundo); border: 1px dashed var(--linha); border-radius: 8px; margin: 14px 0 18px; line-height: 1.3; }
+.com { color: var(--c-com); font-style: italic; } .kw { color: var(--c-kw); } .tipo { color: var(--c-tipo); }
+.fn { color: var(--c-fn); } .str { color: var(--c-str); } .numr { color: var(--c-num); } .pre { color: var(--c-pre); }
+
+figure { margin: 16px 0 20px; }
+figure svg { display: block; width: 100%; height: auto; background: var(--codigo-fundo); border: 1px dashed var(--linha); border-radius: 8px; }
+figcaption { color: var(--suave); font-size: .86rem; margin-top: 6px; }
+svg .aresta { stroke: var(--suave); stroke-width: 2; fill: none; }
+svg .tracejada { stroke: var(--verde); stroke-width: 2; stroke-dasharray: 6 5; fill: none; }
+svg .solida { stroke: var(--ambar); stroke-width: 2; fill: none; }
+svg .no circle { fill: var(--painel-2); stroke: var(--suave); stroke-width: 2; transition: fill .2s, stroke .2s; }
+svg .no text { fill: var(--texto); font-family: var(--mono); font-size: 15px; font-weight: 600; text-anchor: middle; dominant-baseline: central; }
+svg .no.visitado circle { fill: var(--ambar); stroke: var(--ambar); }
+svg .no.visitado text { fill: #1a1405; }
+:root[data-theme="light"] svg .no.visitado text { fill: #fff; }
+svg .rotulo { fill: var(--suave); font-family: var(--mono); font-size: 12px; }
+svg .seta-a { fill: var(--ambar); } svg .seta-v { fill: var(--verde); }
+
+.tocador { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.saida-tocador { font-family: var(--mono); min-height: 2.2em; margin-top: 10px; padding: 6px 12px; background: var(--painel); border: 1px solid var(--linha); border-radius: 6px; }
+.saida-tocador span { color: var(--suave); }
+
+/* ---------- caixas ---------- */
+.armadilha { border: 1px solid var(--coral); border-left-width: 5px; border-radius: 8px; padding: 12px 16px 8px; margin: 26px 0 8px; background: color-mix(in srgb, var(--coral) 7%, var(--painel)); }
+.armadilha h3 { all: unset; display: block; font-family: var(--mono); font-weight: 700; color: var(--coral); margin-bottom: 4px; }
+.armadilha ul { margin: 6px 0; }
+.nota { border-left: 3px solid var(--verde); padding: 6px 0 6px 14px; margin: 14px 0; color: var(--texto); background: none; }
+.nota strong { color: var(--verde); }
+
+.rolagem { overflow-x: auto; margin: 14px 0 18px; border: 1px solid var(--linha); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; background: var(--painel); }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--linha); vertical-align: top; }
+th { font-family: var(--mono); font-size: .82rem; color: var(--suave); background: var(--painel-2); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.m, th.m { font-family: var(--mono); white-space: nowrap; }
+table.matriz { width: auto; }
+table.matriz td, table.matriz th { text-align: center; font-family: var(--mono); padding: 5px 12px; }
+table.matriz td.um { color: var(--ambar); font-weight: 700; }
+
+details { border: 1px solid var(--linha); border-radius: 8px; margin: 10px 0; background: var(--painel); }
+details > summary { cursor: pointer; padding: 10px 14px; font-weight: 600; list-style-position: inside; }
+details[open] > summary { border-bottom: 1px solid var(--linha); }
+details > .dentro { padding: 6px 16px 12px; }
+.questao { border: 1px solid var(--linha); border-radius: 8px; padding: 16px 18px 8px; margin: 18px 0; background: var(--painel); }
+.questao h3 { all: unset; display: block; font-family: var(--mono); font-weight: 700; color: var(--ambar); margin-bottom: 6px; }
+.questao details { background: var(--fundo); }
+.elimina { color: var(--coral); font-weight: 600; }
+
+.relogio { position: sticky; top: 10px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: var(--painel); border: 1px solid var(--linha); border-radius: 8px; padding: 10px 14px; margin: 16px 0; }
+.relogio output { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; min-width: 7ch; }
+.relogio.acabou output { color: var(--coral); }
+.relogio small { color: var(--suave); }
+
+.topo { position: fixed; right: 18px; bottom: 18px; z-index: 20; }
+
+@media (max-width: 900px) {
+  .lateral { transform: translateX(-100%); transition: transform .2s; box-shadow: 0 0 40px rgba(0,0,0,.5); }
+  body.menu-aberto .lateral { transform: none; }
+  .abre-menu { display: block; position: fixed; top: 10px; left: 10px; z-index: 40; }
+  main { margin-left: 0; padding: 60px 16px 100px; }
+  .regras { grid-template-columns: 1fr; }
+  pre { font-size: 12px; }
+  p code, li code, td code, summary code, figcaption code { white-space: normal; overflow-wrap: anywhere; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+@media print {
+  .lateral, .abre-menu, .topo, .bloco-topo button, .tocador, .relogio { display: none !important; }
+  main { margin: 0; padding: 0; }
+  body { background: #fff; color: #000; }
+  pre { white-space: pre-wrap; }
+  section.mod { break-before: page; }
+}
+</style>
+</head>
+<body>
+<button class="btn abre-menu" id="abreMenu" aria-controls="lateral" aria-expanded="false">Índice</button>
+
+<nav class="lateral" id="lateral" aria-label="Índice dos módulos">
+  <div class="marca">AED I <span>/ P2</span></div>
+  <div class="submarca">Revisão em C para prova em papel e juiz eletrônico</div>
+  <div class="atalhos">
+    <button class="btn" id="btTema" title="Atalho: T">Tema claro</button>
+    <button class="btn" id="btGab" title="Atalho: G">Abrir gabaritos</button>
+    <a class="btn" href="#m7" style="text-decoration:none">Ir ao simulado</a>
+    <button class="btn" id="btImp">Imprimir</button>
+  </div>
+  <ol class="indice" id="indice">
+    <li><a href="#m0"><b>0</b>Pontes da P1: ponteiros, memória, fila</a></li>
+    <li><a href="#m1"><b>1</b>Análise assintótica (Big O)</a></li>
+    <li><a href="#m2"><b>2</b>Busca binária recursiva e LAB 8</a></li>
+    <li><a href="#m3"><b>3</b>Árvores binárias e percursos (LAB 9)</a></li>
+    <li><a href="#m4"><b>4</b>ABB: inserção e remoção (LAB 10)</a></li>
+    <li><a href="#m5"><b>5</b>Árvores genéricas (n-árias)</a></li>
+    <li><a href="#m6"><b>6</b>Grafos e digrafos</a></li>
+    <li><a href="#m7"><b>7</b>Simulado e testes mentais</a></li>
+  </ol>
+  <div class="rodape-lateral">
+    Teclas <kbd>0</kbd> a <kbd>7</kbd> pulam para o módulo. <kbd>T</kbd> troca o tema, <kbd>G</kbd> abre ou fecha os gabaritos.<br><br>
+    Todo o código desta página foi compilado em C99 e executado com verificador de vazamento de memória.
+  </div>
+</nav>
+
+<main><div class="coluna">
+
+<header class="abertura" id="inicio">
+  <h1>Revisão para a P2 de AED I</h1>
+  <p>Você já conhece a teoria. Esta página treina o que decide a nota: escrever C correto de primeira, à mão, e entregar programas que o juiz aceita.</p>
+  <div class="regras">
+    <div class="regra papel">
+      <h2>Prova em papel</h2>
+      <ul>
+        <li>1h50, sem consulta, 4 questões: cerca de 25 minutos por questão.</li>
+        <li>Correção binária: caso base esquecido ou ponteiro não religado zera a questão.</li>
+        <li>Escreva primeiro o caso base, depois as chamadas recursivas, por último o <code>return</code>.</li>
+      </ul>
+    </div>
+    <div class="regra juiz">
+      <h2>Juiz eletrônico</h2>
+      <ul>
+        <li>Nenhuma variável global: tudo nasce no <code>main</code> e viaja por parâmetro.</li>
+        <li>Entrada e saída secas: nada de “Digite n:”, e atenção a espaços e quebras de linha.</li>
+        <li>Para cada <code>malloc</code>, um <code>free</code> antes do <code>return 0</code>.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="aviso">Os programas dos LABs 8, 9 e 10 seguem os enunciados de 2026/2S. Os dos LABs 9 e 10 reproduzem exatamente a saída dos exemplos oficiais. O enunciado do LAB 8 não traz exemplo, então o formato da saída dele é a única parte não conferida.</p>
+</header>
+<!-- ======================= MÓDULO 0 ======================= -->
+<section class="mod" id="m0">
+  <h2><span class="num">0</span>Pontes da P1</h2>
+  <p class="lide">O que da P1 volta a ser cobrado na P2, dentro de todas as questões de árvore e grafo: ponteiros, Heap e fila.</p>
+
+  <h3>Operadores de ponteiro e struct</h3>
+  <div class="rolagem"><table>
+    <tr><th>Operador</th><th>Leitura</th><th>Exemplo</th></tr>
+    <tr><td class="m">&amp;x</td><td>endereço de <code>x</code></td><td class="m">int *p = &amp;x;</td></tr>
+    <tr><td class="m">*p</td><td>o conteúdo do endereço guardado em <code>p</code></td><td class="m">*p = 20;</td></tr>
+    <tr><td class="m">a.dado</td><td>campo de uma struct (variável comum)</td><td class="m">No a; a.dado = 1;</td></tr>
+    <tr><td class="m">q-&gt;dado</td><td>campo de uma struct via ponteiro; igual a <code>(*q).dado</code></td><td class="m">No *q; q-&gt;dado = 2;</td></tr>
+    <tr><td class="m">No **pp</td><td>endereço de um ponteiro: permite alterar o ponteiro de quem chamou</td><td class="m">*pp = novo; (*pp)-&gt;dado</td></tr>
+  </table></div>
+  <div class="bloco" data-t="operadores na prática"><pre class="c">int x = 10;            // x mora na Stack
+int *p = &amp;x;           // &amp;x = endereço de x; p guarda esse endereço
+*p = 20;               // *p = "o que está no endereço": agora x vale 20
+
+No a;                  // struct na Stack: acesso com PONTO
+a.dado = 1;
+a.esq = NULL;
+a.dir = NULL;
+
+No *q = malloc(sizeof(No));   // struct na Heap: q guarda o endereço dela
+if (q == NULL) return 1;      // malloc devolve NULL se faltar memória
+q-&gt;dado = 2;                  // q-&gt;dado é o mesmo que (*q).dado
+q-&gt;esq = NULL;
+q-&gt;dir = &amp;a;                  // pode apontar para qualquer No válido
+
+No **pp = &amp;q;          // ponteiro duplo: endereço de um ponteiro
+(*pp)-&gt;dado = 3;       // altera o nó apontado por q
+free(q);               // devolve o bloco à Heap
+q = NULL;              // boa prática: q deixa de ser ponteiro "pendurado"</pre></div>
+
+  <h3>Ponteiro duplo: quando a função precisa mudar o ponteiro</h3>
+  <p>C passa tudo por cópia, inclusive ponteiros. Se a função precisa fazer a raiz do <code>main</code> apontar para outro lugar, há duas saídas: devolver o novo ponteiro (<code>raiz = insere(raiz, x)</code>) ou receber o endereço dele (<code>No **</code>).</p>
+  <pre class="ascii">main()                                 insere_pp(&amp;raiz, 50)
+
+No *raiz  [ NULL ]  &lt;----------------- No **r  [ &amp;raiz ]
+
+*r = novo_no(50);     escreve DENTRO da variável raiz do main      (certo)
+ r = novo_no(50);     muda só a cópia local; raiz continua NULL    (errado)</pre>
+  <div class="bloco" data-t="cópia do ponteiro × endereço do ponteiro"><pre class="c">/* ERRADO: r é uma CÓPIA do ponteiro de quem chamou */
+void cria_errado(No *r) {
+    r = malloc(sizeof(No));      // só a cópia local muda...
+}                                // ...e o bloco vaza (ninguém guarda o endereço)
+
+/* CERTO: recebe o ENDEREÇO do ponteiro (No **) */
+void cria_certo(No **r) {
+    *r = malloc(sizeof(No));     // *r é o ponteiro original de quem chamou
+    (*r)-&gt;dado = 7;              // parênteses obrigatórios: -&gt; vence o *
+    (*r)-&gt;esq = NULL;
+    (*r)-&gt;dir = NULL;
+}</pre></div>
+
+  <h3>Heap e Stack</h3>
+  <pre class="ascii">STACK (automática: some quando a função retorna)      HEAP (manual: só some com free)
+
++- main() -------------------+                      +------+------+------+
+| int  x      [    20    ]   |            +--------&gt;|  50  | NULL | NULL |
+| int *p      [    &amp;x    ]   |            |         +------+------+------+
+| No  *raiz   [  0x5a10  ]---+------------+           dado    esq    dir
++----------------------------+                      bloco de malloc(sizeof(No))
+
+Perdeu o único ponteiro para o bloco sem dar free?  Vazamento: o juiz reprova.</pre>
+  <div class="rolagem"><table>
+    <tr><th></th><th>Stack</th><th>Heap</th></tr>
+    <tr><td>Quem aloca</td><td>o compilador, ao entrar na função</td><td>você, com <code>malloc</code> ou <code>calloc</code></td></tr>
+    <tr><td>Quem libera</td><td>automático, ao sair da função</td><td>você, com <code>free</code></td></tr>
+    <tr><td>Uso típico</td><td>variáveis locais, parâmetros, a struct <code>Fila</code></td><td>nós de árvore, células de lista, vetores de tamanho lido</td></tr>
+    <tr><td>Erro clássico</td><td>devolver endereço de variável local</td><td>vazamento, <code>free</code> duplo, uso após <code>free</code></td></tr>
+  </table></div>
+
+  <h4>Alocar um nó</h4>
+  <div class="bloco" data-t="novo_no"><pre class="c">typedef struct No {
+    int dado;            // chave inteira guardada no nó
+    struct No *esq;      // raiz da subárvore esquerda (NULL = vazia)
+    struct No *dir;      // raiz da subárvore direita  (NULL = vazia)
+} No;
+
+No *novo_no(int dado) {
+    No *n = malloc(sizeof(No));   // sizeof(No), nunca sizeof(No *)
+    if (n == NULL) return NULL;   // sem memória: devolve NULL
+    n-&gt;dado = dado;
+    n-&gt;esq = NULL;                // malloc NÃO zera: inicialize sempre
+    n-&gt;dir = NULL;
+    return n;                     // o endereço sobrevive ao fim da função
+}</pre></div>
+
+  <h4>Limpeza total: sempre em pós-ordem</h4>
+  <p>Um nó só pode ser liberado depois dos filhos, porque é ele quem guarda os endereços deles. Liberar a raiz primeiro e depois ler <code>r-&gt;esq</code> é uso de memória já devolvida.</p>
+  <div class="bloco" data-t="destroi_arvore"><pre class="c">void destroi_arvore(No *r) {
+    if (r == NULL) return;        // caso base: nada a liberar
+    destroi_arvore(r-&gt;esq);       // 1º libera toda a esquerda
+    destroi_arvore(r-&gt;dir);       // 2º libera toda a direita
+    free(r);                      // 3º só agora libera a raiz (pós-ordem)
+}</pre></div>
+
+  <h3>Fila dinâmica (FIFO)</h3>
+  <p>Entra no fim, sai do início. É a estrutura obrigatória do percurso em nível (Módulo 3): os nós saem na mesma ordem em que foram descobertos. Aqui ela já guarda <code>No *</code>, pronta para a árvore.</p>
+  <pre class="ascii">            ini                                    fim
+             |                                      |
+             v                                      v
+          +-----+---+      +-----+---+      +-----+------+
+sai  &lt;--  |  A  | *-+-----&gt;|  B  | *-+-----&gt;|  C  | NULL |  &lt;--  entra
+          +-----+---+      +-----+---+      +-----+------+
+        desenfileira()                        enfileira()</pre>
+  <div class="bloco" data-t="fila encadeada de No *"><pre class="c">typedef struct Cel {
+    No *no;                // a fila guarda PONTEIROS para nós da árvore
+    struct Cel *prox;
+} Cel;
+
+typedef struct {
+    Cel *ini;              // de onde se retira
+    Cel *fim;              // onde se insere
+} Fila;
+
+void fila_inicia(Fila *f) { f-&gt;ini = NULL; f-&gt;fim = NULL; }
+
+int fila_vazia(Fila *f) { return f-&gt;ini == NULL; }
+
+void enfileira(Fila *f, No *no) {
+    Cel *c = malloc(sizeof(Cel));       // nova célula na Heap
+    c-&gt;no = no;
+    c-&gt;prox = NULL;                     // será a última
+    if (f-&gt;fim == NULL) f-&gt;ini = c;     // fila vazia: também é a primeira
+    else f-&gt;fim-&gt;prox = c;              // senão, engata após a última
+    f-&gt;fim = c;                         // fim passa a ser a nova célula
+}
+
+No *desenfileira(Fila *f) {             // pré-condição: fila não vazia
+    Cel *c = f-&gt;ini;                    // célula que vai sair
+    No *no = c-&gt;no;                     // salva o conteúdo ANTES do free
+    f-&gt;ini = c-&gt;prox;                   // início avança
+    if (f-&gt;ini == NULL) f-&gt;fim = NULL;  // esvaziou: fim também vira NULL
+    free(c);                            // libera a célula (não o nó da árvore)
+    return no;
+}</pre></div>
+
+  <div class="armadilha">
+    <h3>Armadilhas clássicas de prova em papel</h3>
+    <ul>
+      <li><code>malloc(sizeof(No *))</code> reserva só o tamanho de um ponteiro. O certo é <code>sizeof(No)</code>.</li>
+      <li><code>*r-&gt;esq</code> significa <code>*(r-&gt;esq)</code>. Com ponteiro duplo, escreva sempre <code>(*r)-&gt;esq</code>.</li>
+      <li>Usar <code>.</code> com ponteiro ou <code>-&gt;</code> com variável comum. Ponteiro pede seta.</li>
+      <li>Nó novo sem <code>esq = dir = NULL</code>: <code>malloc</code> devolve lixo e o percurso não para nunca.</li>
+      <li><code>free(r)</code> antes das chamadas recursivas em <code>destroi_arvore</code>.</li>
+      <li>Em <code>desenfileira</code>, esquecer <code>f-&gt;fim = NULL</code> quando a fila esvazia: o próximo <code>enfileira</code> escreve em célula já liberada.</li>
+      <li>Em <code>desenfileira</code>, dar <code>free(c)</code> e depois ler <code>c-&gt;no</code> ou <code>c-&gt;prox</code>. Salve antes.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ======================= MÓDULO 1 ======================= -->
+<section class="mod" id="m1">
+  <h2><span class="num">1</span>Análise assintótica (Big O)</h2>
+  <p class="lide">Quanto o número de instruções cresce quando a entrada cresce. Constantes e termos menores são descartados.</p>
+
+  <h3>Definição enxuta</h3>
+  <p><i>f</i>(<i>n</i>) = O(<i>g</i>(<i>n</i>)) se existem constantes <i>c</i> &gt; 0 e <i>n</i><sub>0</sub> tais que <i>f</i>(<i>n</i>) ≤ <i>c</i>·<i>g</i>(<i>n</i>) para todo <i>n</i> ≥ <i>n</i><sub>0</sub>. Ou seja, <i>g</i> é um limite superior assintótico de <i>f</i>. Na disciplina, <i>f</i>(<i>n</i>) costuma ser a contagem de instruções no pior caso.</p>
+  <p>Exemplo: <i>f</i>(<i>n</i>) = 3<i>n</i> + 3 é O(<i>n</i>), pois 3<i>n</i> + 3 ≤ 4<i>n</i> para todo <i>n</i> ≥ 3 (<i>c</i> = 4, <i>n</i><sub>0</sub> = 3).</p>
+  <p>Regras de simplificação: fique com o termo de maior crescimento e apague o coeficiente. Ordem de crescimento: 1 &lt; log <i>n</i> &lt; <i>n</i> &lt; <i>n</i> log <i>n</i> &lt; <i>n</i>² &lt; 2<sup><i>n</i></sup>.</p>
+
+  <h3>Contagem de frequência de instruções</h3>
+  <p>Cada atribuição, comparação e incremento conta 1. Um <code>for</code> se decompõe em três partes: inicialização (1 vez), teste (<i>n</i> + 1 vezes, pois o último teste é o que falha) e incremento (<i>n</i> vezes).</p>
+  <p class="nota"><strong>Convenção.</strong> Há professores que contam <code>soma += v[i]</code> como 2 operações ou ignoram o teste do laço. O Big O final não muda, mas a função <i>f</i>(<i>n</i>) muda: use na prova a mesma convenção dos slides da sua turma.</p>
+
+  <h4>Laço simples: O(<i>n</i>)</h4>
+  <div class="bloco" data-t="um laço"><pre class="c">soma = 0;                      // 1
+for (i = 0; i &lt; n; i++)        // i = 0: 1   |  i &lt; n: n + 1  |  i++: n
+    soma += v[i];              // n</pre></div>
+  <p><i>f</i>(<i>n</i>) = 1 + 1 + (<i>n</i> + 1) + <i>n</i> + <i>n</i> = 3<i>n</i> + 3, portanto O(<i>n</i>).</p>
+
+  <h4>Laços aninhados: O(<i>n</i>²)</h4>
+  <div class="bloco" data-t="dois laços aninhados"><pre class="c">soma = 0;                      // 1
+for (i = 0; i &lt; n; i++)        // 1  |  n + 1  |  n
+    for (j = 0; j &lt; n; j++)    // j = 0: n  |  j &lt; n: n(n + 1)  |  j++: n²
+        soma++;                // n²</pre></div>
+  <p>O laço interno inteiro roda <i>n</i> vezes; em cada rodada o teste <code>j &lt; n</code> ocorre <i>n</i> + 1 vezes.</p>
+  <p><i>f</i>(<i>n</i>) = 1 + 1 + (<i>n</i> + 1) + <i>n</i> + <i>n</i> + <i>n</i>(<i>n</i> + 1) + <i>n</i>² + <i>n</i>² = 3<i>n</i>² + 4<i>n</i> + 3, portanto O(<i>n</i>²).</p>
+
+  <h4>Variável dividida por 2: O(log <i>n</i>)</h4>
+  <div class="bloco" data-t="laço logarítmico"><pre class="c">c = 0;                         // 1
+for (i = n; i &gt; 1; i /= 2)     // i vale n, n/2, n/4, ..., 1
+    c++;                       // executa k vezes, com n / 2^k = 1</pre></div>
+  <p>Depois de <i>k</i> voltas, <i>i</i> = <i>n</i> / 2<sup><i>k</i></sup>. O laço para quando <i>n</i> / 2<sup><i>k</i></sup> = 1, isto é, 2<sup><i>k</i></sup> = <i>n</i> e <i>k</i> = log<sub>2</sub> <i>n</i>. O mesmo vale para <code>i = 1; i &lt; n; i *= 2</code>.</p>
+
+  <h3>Busca linear × busca binária</h3>
+  <div class="bloco" data-t="busca linear"><pre class="c">int busca_linear(const int *v, int n, int x) {
+    for (int i = 0; i &lt; n; i++)      // pior caso: x não está, n comparações
+        if (v[i] == x) return i;
+    return -1;
+}</pre></div>
+  <p><strong>Linear.</strong> No pior caso (elemento ausente) faz <i>n</i> comparações com <code>x</code>: O(<i>n</i>). Não exige ordenação.</p>
+  <p><strong>Binária.</strong> Exige vetor ordenado. Cada comparação descarta metade do que resta:</p>
+  <div class="rolagem"><table>
+    <tr><th>Passo</th><th>Elementos restantes</th></tr>
+    <tr><td class="m">0</td><td class="m">n</td></tr>
+    <tr><td class="m">1</td><td class="m">n / 2</td></tr>
+    <tr><td class="m">2</td><td class="m">n / 4 = n / 2²</td></tr>
+    <tr><td class="m">k</td><td class="m">n / 2<sup>k</sup></td></tr>
+  </table></div>
+  <p>A busca termina quando resta 1 elemento: <i>n</i> / 2<sup><i>k</i></sup> = 1 ⇒ 2<sup><i>k</i></sup> = <i>n</i> ⇒ <i>k</i> = log<sub>2</sub> <i>n</i>. Logo o pior caso é O(log <i>n</i>); com exatidão, no máximo ⌊log<sub>2</sub> <i>n</i>⌋ + 1 comparações. Para <i>n</i> = 1.000.000: 1.000.000 comparações na linear contra 20 na binária.</p>
+
+  <h3>Tabela comparativa</h3>
+  <div class="rolagem"><table>
+    <tr><th>Estrutura</th><th>Busca</th><th>Inserção</th><th>Remoção</th><th>Espaço</th></tr>
+    <tr><td>Vetor não ordenado</td><td class="m">O(n)</td><td class="m">O(1) no fim</td><td class="m">O(n)</td><td class="m">O(n)</td></tr>
+    <tr><td>Vetor ordenado</td><td class="m">O(log n)</td><td class="m">O(n)</td><td class="m">O(n)</td><td class="m">O(n)</td></tr>
+    <tr><td>Lista encadeada</td><td class="m">O(n)</td><td class="m">O(1) no início</td><td class="m">O(n) com busca</td><td class="m">O(n)</td></tr>
+    <tr><td>Pilha / Fila encadeada</td><td class="m">não se aplica</td><td class="m">O(1)</td><td class="m">O(1)</td><td class="m">O(n)</td></tr>
+    <tr><td>ABB (altura <i>h</i>)</td><td class="m">O(h)</td><td class="m">O(h)</td><td class="m">O(h)</td><td class="m">O(n)</td></tr>
+    <tr><td>ABB balanceada, <i>h</i> ≈ log <i>n</i></td><td class="m">O(log n)</td><td class="m">O(log n)</td><td class="m">O(log n)</td><td class="m">O(n)</td></tr>
+    <tr><td>ABB degenerada, <i>h</i> = <i>n</i> − 1 (pior caso)</td><td class="m">O(n)</td><td class="m">O(n)</td><td class="m">O(n)</td><td class="m">O(n)</td></tr>
+    <tr><td>Percurso de árvore (qualquer um)</td><td class="m" colspan="3">O(n): cada nó é visitado uma vez</td><td class="m">O(h) de pilha, O(n) de fila</td></tr>
+    <tr><td>Grafo: matriz de adjacência</td><td class="m">u–v? O(1)</td><td class="m">aresta O(1)</td><td class="m">aresta O(1)</td><td class="m">O(|V|²)</td></tr>
+    <tr><td>Grafo: listas de adjacência</td><td class="m">u–v? O(grau(u))</td><td class="m">aresta O(1)</td><td class="m">aresta O(grau(u))</td><td class="m">O(|V| + |E|)</td></tr>
+    <tr><td>Busca em largura no grafo</td><td class="m" colspan="3">listas: O(|V| + |E|) &nbsp; matriz: O(|V|²)</td><td class="m">O(|V|)</td></tr>
+  </table></div>
+
+  <div class="armadilha">
+    <h3>Armadilhas clássicas de prova em papel</h3>
+    <ul>
+      <li>Contar o teste do <code>for</code> como <i>n</i> vezes. São <i>n</i> + 1.</li>
+      <li>Responder O(3<i>n</i>² + 4<i>n</i>). A resposta final é só O(<i>n</i>²).</li>
+      <li>Ver dois laços e escrever O(<i>n</i>²) sem olhar o passo: com <code>j *= 2</code> o laço interno é log <i>n</i>.</li>
+      <li>Dizer que a busca em ABB é O(log <i>n</i>) “no pior caso”. No pior caso a árvore é uma lista: O(<i>n</i>).</li>
+      <li>Aplicar busca binária em vetor não ordenado.</li>
+      <li>Pedir a função <i>f</i>(<i>n</i>) e você entregar só o Big O, ou o contrário. Leia o que a questão pede.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ======================= MÓDULO 2 ======================= -->
+<section class="mod" id="m2">
+  <h2><span class="num">2</span>Busca binária recursiva e LAB 8</h2>
+  <p class="lide">Dois casos base, duas chamadas recursivas e nenhum laço.</p>
+
+  <h3>Implementação padrão</h3>
+  <div class="bloco" data-t="busca binária recursiva"><pre class="c">/* Devolve o índice de x em v[ini..fim] ou -1 se não existir */
+int busca_bin(const int *v, int ini, int fim, int x) {
+    if (ini &gt; fim) return -1;                 // intervalo vazio: não achou
+    int meio = ini + (fim - ini) / 2;         // ponto médio (sem estouro de int)
+    if (v[meio] == x) return meio;            // achou
+    if (x &lt; v[meio])
+        return busca_bin(v, ini, meio - 1, x);    // metade esquerda, SEM o meio
+    return busca_bin(v, meio + 1, fim, x);        // metade direita,  SEM o meio
+}</pre></div>
+  <p>Chamada inicial: <code>busca_bin(v, 0, n - 1, x)</code>. A cada chamada o intervalo perde pelo menos o elemento do meio, então a recursão sempre termina.</p>
+  <pre class="ascii">v = [10  20  30  40  50  60  70]      x = 60
+      0   1   2   3   4   5   6
+
+busca_bin(v, 0, 6, 60)   meio = 3   v[3] = 40 &lt; 60   vai para a direita
+busca_bin(v, 4, 6, 60)   meio = 5   v[5] = 60        achou: devolve 5
+
+Para x = 65:  (0,6) -&gt; (4,6) -&gt; (6,6) -&gt; (6,5)   ini &gt; fim: devolve -1</pre>
+
+  <h3>LAB 8: entre quais itens <i>x</i> se encaixa</h3>
+  <p>Enunciado: dada uma lista ordenada <i>A</i> com <i>n</i> inteiros e um inteiro <i>x</i> que não está na lista, encontrar <i>A</i>[<i>i</i>] e <i>A</i>[<i>i</i>+1] tais que <i>A</i>[<i>i</i>] &lt; <i>x</i> &lt; <i>A</i>[<i>i</i>+1], ou informar que o par não existe. Exigências: algoritmo recursivo baseado em busca binária, nenhuma variável global, toda memória desalocada.</p>
+  <div class="rolagem"><table>
+    <tr><th></th><th>Formato</th></tr>
+    <tr><td>Entrada, linha 1</td><td>o item <i>x</i> e o tamanho <i>n</i>, nessa ordem</td></tr>
+    <tr><td>Entrada, linha 2</td><td>os <i>n</i> inteiros da sequência, já ordenados</td></tr>
+    <tr><td>Saída</td><td>os dois inteiros do intervalo, ou a frase <code>nao ha intervalo valido</code> (sem acentos)</td></tr>
+  </table></div>
+  <p class="nota"><strong>Não conferido.</strong> O enunciado não mostra um exemplo, então não há como saber se os dois inteiros saem separados por espaço, colados ou em linhas diferentes. O programa abaixo imprime <code>20 30</code>, com um espaço. Se o juiz recusar só por formatação, é esse <code>printf</code> que deve mudar.</p>
+  <p><strong>Ideia.</strong> Manter um invariante: <code>v[ini] &lt; x &lt; v[fim]</code>. As bordas são verificadas uma única vez, antes da recursão. Dentro dela, o meio substitui uma das bordas e o invariante continua valendo. Quando as bordas ficam vizinhas, a resposta é <code>ini</code>.</p>
+  <div class="bloco" data-t="LAB 8, programa completo"><pre class="c">/*
+ * AED I - Laboratório VIII: intervalo de x em lista ordenada (busca binária recursiva)
+ * Nome: ...                RA: ...
+ * Entrada: x e n na primeira linha; os n inteiros ordenados na segunda
+ * Saída:   os dois vizinhos de x ou "nao ha intervalo valido"
+ */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+/* Invariante: v[ini] &lt; x &lt; v[fim] e ini &lt; fim.
+   Devolve i tal que v[i] &lt; x &lt; v[i+1], ou -1 se x está no vetor. */
+int intervalo_rec(const int *v, int ini, int fim, int x) {
+    if (fim - ini == 1) return ini;           // vizinhos: o intervalo é (v[ini], v[fim])
+    int meio = ini + (fim - ini) / 2;         // ini &lt; meio &lt; fim, garantido
+    if (v[meio] == x) return -1;              // defesa: o enunciado garante que não ocorre
+    if (v[meio] &lt; x)
+        return intervalo_rec(v, meio, fim, x);    // meio vira a nova borda esquerda
+    return intervalo_rec(v, ini, meio, x);        // meio vira a nova borda direita
+}
+
+/* Trata as bordas e só então dispara a recursão */
+int intervalo(const int *v, int n, int x) {
+    if (n &lt; 2) return -1;                     // lista vazia ou unitária
+    if (x &lt;= v[0]) return -1;                 // menor (ou igual) ao primeiro
+    if (x &gt;= v[n - 1]) return -1;             // maior (ou igual) ao último
+    return intervalo_rec(v, 0, n - 1, x);     // aqui v[0] &lt; x &lt; v[n-1]
+}
+
+int main(void) {
+    int x, n;
+    if (scanf("%d %d", &amp;x, &amp;n) != 2) return 0;   // 1ª linha: o item e o tamanho
+    int *v = NULL;
+    if (n &gt; 0) {
+        v = malloc(n * sizeof(int));              // vetor na Heap, tamanho lido
+        if (v == NULL) return 1;
+        for (int i = 0; i &lt; n; i++) scanf("%d", &amp;v[i]);   // 2ª linha: a sequência
+    }
+
+    int i = intervalo(v, n, x);                   // n &lt; 2 já devolve -1 sem tocar em v
+    if (i == -1) printf("nao ha intervalo valido\n");
+    else printf("%d %d\n", v[i], v[i + 1]);
+
+    free(v);                                      // free(NULL) é permitido e não faz nada
+    return 0;
+}</pre></div>
+  <pre class="ascii">Entrada:   25 5                 (x = 25, n = 5)
+           10 20 30 40 50
+
+intervalo(v, 5, 25)             10 &lt; 25 &lt; 50: passou pelas bordas
+intervalo_rec(v, 0, 4, 25)      meio = 2   v[2] = 30 &gt; 25   borda direita = 2
+intervalo_rec(v, 0, 2, 25)      meio = 1   v[1] = 20 &lt; 25   borda esquerda = 1
+intervalo_rec(v, 1, 2, 25)      fim - ini == 1              devolve 1
+
+Saída:     20 30                (v[1] &lt; 25 &lt; v[2])</pre>
+
+  <h4>Casos de borda</h4>
+  <div class="rolagem"><table>
+    <tr><th>Situação</th><th>Onde é tratada</th><th>Resultado</th></tr>
+    <tr><td><i>x</i> menor que o primeiro</td><td class="m">x &lt;= v[0]</td><td>não há intervalo válido</td></tr>
+    <tr><td><i>x</i> maior que o último</td><td class="m">x &gt;= v[n - 1]</td><td>não há intervalo válido</td></tr>
+    <tr><td>Lista unitária (ou vazia)</td><td class="m">n &lt; 2</td><td>não há intervalo válido: falta um vizinho</td></tr>
+    <tr><td><i>x</i> é um dos itens</td><td class="m">v[meio] == x</td><td>o enunciado garante que não acontece; o teste fica como defesa</td></tr>
+    <tr><td>Dois elementos, <i>x</i> entre eles</td><td class="m">fim - ini == 1</td><td>devolve 0 direto</td></tr>
+  </table></div>
+  <p class="nota"><strong>Por que aqui é <code>meio</code> e não <code>meio ± 1</code>?</strong> Na busca clássica o meio já foi testado e pode ser descartado. Aqui o meio vira borda do intervalo e precisa continuar dentro dele. A recursão ainda termina porque <code>ini &lt; meio &lt; fim</code> sempre que <code>fim - ini ≥ 2</code>.</p>
+
+  <div class="armadilha">
+    <h3>Armadilhas clássicas de prova em papel</h3>
+    <ul>
+      <li>Esquecer o caso base <code>ini &gt; fim</code>: recursão infinita quando o elemento não existe.</li>
+      <li>Esquecer o <code>return</code> na frente da chamada recursiva. A função acha o valor e devolve lixo.</li>
+      <li>Na busca clássica, chamar com <code>meio</code> em vez de <code>meio - 1</code> ou <code>meio + 1</code>: com dois elementos o intervalo não encolhe.</li>
+      <li>Comparar índice com valor: <code>if (meio == x)</code> no lugar de <code>if (v[meio] == x)</code>.</li>
+      <li>No juiz: ler <i>n</i> antes de <i>x</i> (a ordem na entrada é <i>x</i>, depois <i>n</i>), escrever a frase com acento, ou esquecer o <code>free(v)</code>.</li>
+      <li>Resolver com laço. O enunciado zera soluções não recursivas.</li>
+    </ul>
+  </div>
+</section>
+<!-- ======================= MÓDULO 3 ======================= -->
+<section class="mod" id="m3">
+  <h2><span class="num">3</span>Árvores binárias e percursos (LAB 9)</h2>
+  <p class="lide">Os quatro percursos diferem apenas em quando a raiz é visitada. Três usam recursão (ou pilha); o quarto usa fila. O LAB 9 exige pré-ordem e em ordem recursivos, pós-ordem e em nível iterativos.</p>
+
+  <h3>O nó</h3>
+  <div class="bloco" data-t="struct No"><pre class="c">typedef struct No {
+    int dado;            // chave inteira guardada no nó
+    struct No *esq;      // raiz da subárvore esquerda (NULL = vazia)
+    struct No *dir;      // raiz da subárvore direita  (NULL = vazia)
+} No;</pre></div>
+  <p>Árvore vazia é <code>NULL</code>. Toda função recursiva de árvore começa com <code>if (r == NULL)</code>.</p>
+
+  <h3>Os percursos, passo a passo</h3>
+  <figure>
+    <svg viewBox="0 0 560 240" role="img" aria-label="Árvore binária de busca com raiz 50, filhos 30 e 70, e folhas 20, 40, 60 e 80" id="arvoreDemo">
+      <line class="aresta" x1="280" y1="40" x2="140" y2="120"/><line class="aresta" x1="280" y1="40" x2="420" y2="120"/>
+      <line class="aresta" x1="140" y1="120" x2="70" y2="200"/><line class="aresta" x1="140" y1="120" x2="210" y2="200"/>
+      <line class="aresta" x1="420" y1="120" x2="350" y2="200"/><line class="aresta" x1="420" y1="120" x2="490" y2="200"/>
+      <g class="no" data-v="50"><circle cx="280" cy="40" r="22"/><text x="280" y="40">50</text></g>
+      <g class="no" data-v="30"><circle cx="140" cy="120" r="22"/><text x="140" y="120">30</text></g>
+      <g class="no" data-v="70"><circle cx="420" cy="120" r="22"/><text x="420" y="120">70</text></g>
+      <g class="no" data-v="20"><circle cx="70" cy="200" r="22"/><text x="70" y="200">20</text></g>
+      <g class="no" data-v="40"><circle cx="210" cy="200" r="22"/><text x="210" y="200">40</text></g>
+      <g class="no" data-v="60"><circle cx="350" cy="200" r="22"/><text x="350" y="200">60</text></g>
+      <g class="no" data-v="80"><circle cx="490" cy="200" r="22"/><text x="490" y="200">80</text></g>
+    </svg>
+    <div class="tocador">
+      <button class="btn" data-perc="pre">Pré-ordem</button>
+      <button class="btn" data-perc="em">Em ordem</button>
+      <button class="btn" data-perc="pos">Pós-ordem</button>
+      <button class="btn" data-perc="nivel">Em nível</button>
+    </div>
+    <div class="saida-tocador" id="saidaTocador" aria-live="polite"><span>Escolha um percurso para ver a ordem de visita.</span></div>
+    <figcaption>ABB obtida inserindo 50, 30, 70, 20, 40, 60, 80. É a árvore usada nos exemplos deste módulo e do próximo.</figcaption>
+  </figure>
+  <div class="rolagem"><table>
+    <tr><th>Percurso</th><th>Ordem</th><th>Saída na árvore acima</th><th>Para que serve</th></tr>
+    <tr><td>Pré-ordem</td><td>Raiz, Esq, Dir</td><td class="m">50 30 20 40 70 60 80</td><td>copiar a árvore</td></tr>
+    <tr><td>Em ordem</td><td>Esq, Raiz, Dir</td><td class="m">20 30 40 50 60 70 80</td><td>ordem crescente na ABB</td></tr>
+    <tr><td>Pós-ordem</td><td>Esq, Dir, Raiz</td><td class="m">20 40 30 60 80 70 50</td><td>liberar a árvore</td></tr>
+    <tr><td>Em nível</td><td>nível a nível, da esquerda para a direita</td><td class="m">50 30 70 20 40 60 80</td><td>largura (BFS)</td></tr>
+  </table></div>
+
+  <h4>1. Pré-ordem, recursivo</h4>
+  <div class="bloco" data-t="pre_ordem"><pre class="c">void pre_ordem(No *r) {
+    if (r == NULL) return;
+    printf("%d ", r-&gt;dado);    // Raiz
+    pre_ordem(r-&gt;esq);         // Esquerda
+    pre_ordem(r-&gt;dir);         // Direita
+}</pre></div>
+  <h4>2. Em ordem, recursivo</h4>
+  <div class="bloco" data-t="em_ordem"><pre class="c">void em_ordem(No *r) {
+    if (r == NULL) return;
+    em_ordem(r-&gt;esq);          // Esquerda
+    printf("%d ", r-&gt;dado);    // Raiz
+    em_ordem(r-&gt;dir);          // Direita
+}</pre></div>
+  <h4>3. Pós-ordem, recursivo</h4>
+  <div class="bloco" data-t="pos_ordem"><pre class="c">void pos_ordem(No *r) {
+    if (r == NULL) return;
+    pos_ordem(r-&gt;esq);         // Esquerda
+    pos_ordem(r-&gt;dir);         // Direita
+    printf("%d ", r-&gt;dado);    // Raiz
+}</pre></div>
+
+  <h4>3. Pós-ordem, iterativo</h4>
+  <p>Sem recursão, a pilha é sua. A dificuldade do pós-ordem é que cada nó aparece no topo duas vezes: ao voltar da esquerda e ao voltar da direita. O ponteiro <code>ultimo</code> diz de onde se está voltando.</p>
+  <ol>
+    <li>Enquanto houver nó, empilhe e desça para a esquerda.</li>
+    <li>Acabou a esquerda: olhe o topo sem desempilhar.</li>
+    <li>Se o topo tem direita e ela não foi a última visitada, vá para a direita.</li>
+    <li>Caso contrário, visite o topo, desempilhe e registre-o em <code>ultimo</code>.</li>
+  </ol>
+  <div class="bloco" data-t="pos_ordem_iter com pilha encadeada"><pre class="c">/* Pilha encadeada reaproveitando a struct Cel da fila */
+void empilha(Cel **topo, No *no) {
+    Cel *c = malloc(sizeof(Cel));
+    c-&gt;no = no;
+    c-&gt;prox = *topo;           // nova célula aponta para o topo antigo
+    *topo = c;                 // e passa a ser o topo
+}
+
+No *desempilha(Cel **topo) {   // pré-condição: pilha não vazia
+    Cel *c = *topo;
+    No *no = c-&gt;no;
+    *topo = c-&gt;prox;
+    free(c);
+    return no;
+}
+
+void pos_ordem_iter(No *r) {
+    Cel *pilha = NULL;                 // pilha vazia
+    No *atual = r;
+    No *ultimo = NULL;                 // último nó que foi impresso
+    while (atual != NULL || pilha != NULL) {
+        if (atual != NULL) {
+            empilha(&amp;pilha, atual);    // guarda o caminho
+            atual = atual-&gt;esq;        // desce tudo à esquerda
+        } else {
+            No *topo = pilha-&gt;no;      // espia o topo sem remover
+            if (topo-&gt;dir != NULL &amp;&amp; topo-&gt;dir != ultimo) {
+                atual = topo-&gt;dir;     // direita ainda não visitada: vai nela
+            } else {
+                printf("%d ", topo-&gt;dado);     // esq e dir prontas: visita
+                ultimo = desempilha(&amp;pilha);   // remove e marca como visitado
+            }
+        }
+    }
+}                                      // ao sair a pilha está vazia: sem vazamento</pre></div>
+
+  <h3>Percurso em nível (largura)</h3>
+  <p>Usa a fila do Módulo 0. A raiz entra; a cada nó que sai, seus filhos entram no fim.</p>
+  <div class="bloco" data-t="em_nivel"><pre class="c">void em_nivel(No *r) {
+    if (r == NULL) return;             // árvore vazia: não enfileira NULL
+    Fila f;                            // a struct Fila fica na Stack
+    fila_inicia(&amp;f);
+    enfileira(&amp;f, r);                  // começa pela raiz
+    while (!fila_vazia(&amp;f)) {
+        No *n = desenfileira(&amp;f);      // sai o mais antigo (FIFO)
+        printf("%d ", n-&gt;dado);        // visita
+        if (n-&gt;esq != NULL) enfileira(&amp;f, n-&gt;esq);   // filhos entram no fim,
+        if (n-&gt;dir != NULL) enfileira(&amp;f, n-&gt;dir);   // esquerda antes da direita
+    }
+}                                      // fila esvaziou: todas as células liberadas</pre></div>
+  <pre class="ascii">fila (início ... fim)     sai     imprime     entram no fim
+[50]                      50      50          30, 70
+[30 70]                   30      30          20, 40
+[70 20 40]                70      70          60, 80
+[20 40 60 80]             20      20          (folha)
+[40 60 80]                40      40          (folha)
+[60 80]                   60      60          (folha)
+[80]                      80      80          (folha)
+[]                        fim do laço
+
+Saída:  50 30 70 20 40 60 80</pre>
+
+  <h3>Busca em ABB</h3>
+  <div class="bloco" data-t="busca: devolve 1 ou 0"><pre class="c">int busca(No *r, int x) {
+    if (r == NULL) return 0;                    // caiu fora da árvore: não existe
+    if (x == r-&gt;dado) return 1;                 // achou
+    if (x &lt; r-&gt;dado) return busca(r-&gt;esq, x);   // menor: só pode estar à esquerda
+    return busca(r-&gt;dir, x);                    // maior: só pode estar à direita
+}</pre></div>
+  <p>Cada comparação desce um nível: custo O(<i>h</i>), em que <i>h</i> é a altura.</p>
+
+  <h3>LAB 9: programa completo</h3>
+  <p>Exigências do enunciado: pré-ordem e em ordem recursivos; pós-ordem e em nível iterativos; nenhuma variável global; toda memória desalocada. Violar qualquer uma delas zera o LAB.</p>
+  <div class="rolagem"><table>
+    <tr><th></th><th>Formato</th></tr>
+    <tr><td>Entrada</td><td>linha 1: <i>n</i>. Linha 2: <i>n</i> inteiros a inserir. Linha 3: o inteiro a buscar.</td></tr>
+    <tr><td>Saída, linhas 1 a 4</td><td>pré-ordem, em ordem, pós-ordem, em nível, nessa ordem</td></tr>
+    <tr><td>Saída, linha 5</td><td><code>1</code> se o valor buscado está na árvore, <code>0</code> se não está</td></tr>
+  </table></div>
+  <pre class="ascii">Entrada                                    Saída
+13                                         5630221131640706065636795     pré-ordem
+56 30 22 11 3 16 40 70 60 65 63 67 95      3111622304056606365677095     em ordem
+16                                         3161122403063676560957056     pós-ordem
+                                           5630702240609511653166367     em nível
+                                           1                             busca do 16</pre>
+  <p class="nota"><strong>Valores colados.</strong> No exemplo oficial cada percurso sai como uma única sequência de dígitos, sem espaço entre os números. Por isso, no programa do LAB, o formato é <code>"%d"</code> e não <code>"%d "</code> como nas funções didáticas acima. Essa é a única diferença entre as duas versões.</p>
+  <div class="bloco" data-t="LAB 9, arquivo completo (saída idêntica à do exemplo oficial)"><pre class="c">/*
+ * AED I - Laboratório IX: ABB com inserção, quatro percursos e busca
+ * Nome: ...                RA: ...
+ * Entrada: n; n chaves; chave a buscar
+ * Saída:   pré-ordem, em ordem, pós-ordem e em nível (valores colados), depois 1 ou 0
+ */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct No {
+    int dado;            // chave inteira guardada no nó
+    struct No *esq;      // raiz da subárvore esquerda (NULL = vazia)
+    struct No *dir;      // raiz da subárvore direita  (NULL = vazia)
+} No;
+
+No *novo_no(int dado) {
+    No *n = malloc(sizeof(No));   // sizeof(No), nunca sizeof(No *)
+    if (n == NULL) return NULL;   // sem memória: devolve NULL
+    n-&gt;dado = dado;
+    n-&gt;esq = NULL;                // malloc NÃO zera: inicialize sempre
+    n-&gt;dir = NULL;
+    return n;                     // o endereço sobrevive ao fim da função
+}
+
+No *insere(No *r, int x) {
+    if (r == NULL) return novo_no(x);     // achou a vaga: o novo nó é a "raiz" daqui
+    if (x &lt; r-&gt;dado)
+        r-&gt;esq = insere(r-&gt;esq, x);       // religa a esquerda com o que voltar
+    else if (x &gt; r-&gt;dado)
+        r-&gt;dir = insere(r-&gt;dir, x);       // religa a direita com o que voltar
+    /* x == r-&gt;dado: repetido, ignora */
+    return r;                             // devolve a raiz desta subárvore
+}
+
+void pre_ordem(No *r) {
+    if (r == NULL) return;
+    printf("%d", r-&gt;dado);    // Raiz
+    pre_ordem(r-&gt;esq);         // Esquerda
+    pre_ordem(r-&gt;dir);         // Direita
+}
+
+void em_ordem(No *r) {
+    if (r == NULL) return;
+    em_ordem(r-&gt;esq);          // Esquerda
+    printf("%d", r-&gt;dado);    // Raiz
+    em_ordem(r-&gt;dir);          // Direita
+}
+
+typedef struct Cel {
+    No *no;                // a fila guarda PONTEIROS para nós da árvore
+    struct Cel *prox;
+} Cel;
+
+typedef struct {
+    Cel *ini;              // de onde se retira
+    Cel *fim;              // onde se insere
+} Fila;
+
+void fila_inicia(Fila *f) { f-&gt;ini = NULL; f-&gt;fim = NULL; }
+
+int fila_vazia(Fila *f) { return f-&gt;ini == NULL; }
+
+void enfileira(Fila *f, No *no) {
+    Cel *c = malloc(sizeof(Cel));       // nova célula na Heap
+    c-&gt;no = no;
+    c-&gt;prox = NULL;                     // será a última
+    if (f-&gt;fim == NULL) f-&gt;ini = c;     // fila vazia: também é a primeira
+    else f-&gt;fim-&gt;prox = c;              // senão, engata após a última
+    f-&gt;fim = c;                         // fim passa a ser a nova célula
+}
+
+No *desenfileira(Fila *f) {             // pré-condição: fila não vazia
+    Cel *c = f-&gt;ini;                    // célula que vai sair
+    No *no = c-&gt;no;                     // salva o conteúdo ANTES do free
+    f-&gt;ini = c-&gt;prox;                   // início avança
+    if (f-&gt;ini == NULL) f-&gt;fim = NULL;  // esvaziou: fim também vira NULL
+    free(c);                            // libera a célula (não o nó da árvore)
+    return no;
+}
+
+/* Pilha encadeada reaproveitando a struct Cel da fila */
+void empilha(Cel **topo, No *no) {
+    Cel *c = malloc(sizeof(Cel));
+    c-&gt;no = no;
+    c-&gt;prox = *topo;           // nova célula aponta para o topo antigo
+    *topo = c;                 // e passa a ser o topo
+}
+
+No *desempilha(Cel **topo) {   // pré-condição: pilha não vazia
+    Cel *c = *topo;
+    No *no = c-&gt;no;
+    *topo = c-&gt;prox;
+    free(c);
+    return no;
+}
+
+void pos_ordem_iter(No *r) {
+    Cel *pilha = NULL;                 // pilha vazia
+    No *atual = r;
+    No *ultimo = NULL;                 // último nó que foi impresso
+    while (atual != NULL || pilha != NULL) {
+        if (atual != NULL) {
+            empilha(&amp;pilha, atual);    // guarda o caminho
+            atual = atual-&gt;esq;        // desce tudo à esquerda
+        } else {
+            No *topo = pilha-&gt;no;      // espia o topo sem remover
+            if (topo-&gt;dir != NULL &amp;&amp; topo-&gt;dir != ultimo) {
+                atual = topo-&gt;dir;     // direita ainda não visitada: vai nela
+            } else {
+                printf("%d", topo-&gt;dado);     // esq e dir prontas: visita
+                ultimo = desempilha(&amp;pilha);   // remove e marca como visitado
+            }
+        }
+    }
+}                                      // ao sair a pilha está vazia: sem vazamento
+
+void em_nivel(No *r) {
+    if (r == NULL) return;             // árvore vazia: não enfileira NULL
+    Fila f;                            // a struct Fila fica na Stack
+    fila_inicia(&amp;f);
+    enfileira(&amp;f, r);                  // começa pela raiz
+    while (!fila_vazia(&amp;f)) {
+        No *n = desenfileira(&amp;f);      // sai o mais antigo (FIFO)
+        printf("%d", n-&gt;dado);        // visita
+        if (n-&gt;esq != NULL) enfileira(&amp;f, n-&gt;esq);   // filhos entram no fim,
+        if (n-&gt;dir != NULL) enfileira(&amp;f, n-&gt;dir);   // esquerda antes da direita
+    }
+}                                      // fila esvaziou: todas as células liberadas
+
+int busca(No *r, int x) {
+    if (r == NULL) return 0;                    // caiu fora da árvore: não existe
+    if (x == r-&gt;dado) return 1;                 // achou
+    if (x &lt; r-&gt;dado) return busca(r-&gt;esq, x);   // menor: só pode estar à esquerda
+    return busca(r-&gt;dir, x);                    // maior: só pode estar à direita
+}
+
+void destroi_arvore(No *r) {
+    if (r == NULL) return;        // caso base: nada a liberar
+    destroi_arvore(r-&gt;esq);       // 1º libera toda a esquerda
+    destroi_arvore(r-&gt;dir);       // 2º libera toda a direita
+    free(r);                      // 3º só agora libera a raiz (pós-ordem)
+}
+
+int main(void) {
+    No *raiz = NULL;                       // árvore vazia; variável LOCAL
+    int n, valor, procurado;
+
+    if (scanf("%d", &amp;n) != 1) return 0;
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;valor);
+        raiz = insere(raiz, valor);        // sempre reatribui a raiz
+    }
+    scanf("%d", &amp;procurado);               // 3ª linha: chave a buscar
+
+    pre_ordem(raiz);       printf("\n");   // linha 1: recursivo
+    em_ordem(raiz);        printf("\n");   // linha 2: recursivo
+    pos_ordem_iter(raiz);  printf("\n");   // linha 3: iterativo, com pilha
+    em_nivel(raiz);        printf("\n");   // linha 4: iterativo, com fila
+    printf("%d\n", busca(raiz, procurado));   // linha 5: 1 ou 0
+
+    destroi_arvore(raiz);                  // libera TODOS os nós antes de sair
+    return 0;
+}</pre></div>
+  <p class="nota"><strong>Quando o separador é espaço.</strong> Em exercícios que pedem os valores separados por espaço, <code>printf("%d ", ...)</code> deixa um espaço sobrando no fim. A saída é imprimir o separador antes de cada valor, exceto o primeiro, levando o estado por ponteiro:</p>
+  <div class="bloco" data-t="percurso sem espaço final"><pre class="c">/* Em ordem com espaço ENTRE os valores e nada no fim: *primeiro começa valendo 1 */
+void em_ordem_seco(No *r, int *primeiro) {
+    if (r == NULL) return;
+    em_ordem_seco(r-&gt;esq, primeiro);
+    if (!*primeiro) printf(" ");     // espaço ANTES de cada valor, menos o 1º
+    printf("%d", r-&gt;dado);
+    *primeiro = 0;                   // o estado viaja por ponteiro, não por global
+    em_ordem_seco(r-&gt;dir, primeiro);
+}</pre></div>
+  <p>No <code>main</code>: <code>int primeiro = 1; em_ordem_seco(raiz, &amp;primeiro); printf("\n");</code></p>
+
+  <div class="armadilha">
+    <h3>Armadilhas clássicas de prova em papel</h3>
+    <ul>
+      <li>Função recursiva sem <code>if (r == NULL) return;</code> na primeira linha.</li>
+      <li>Trocar a posição do <code>printf</code>: é ela, e só ela, que define o percurso.</li>
+      <li>Fazer o percurso em nível com pilha ou com recursão simples. Sai um percurso em profundidade.</li>
+      <li>Enfileirar filhos <code>NULL</code> e depois acessar <code>n-&gt;dado</code>.</li>
+      <li>Enfileirar a direita antes da esquerda: o nível sai invertido.</li>
+      <li>No pós-ordem iterativo, esquecer o teste <code>topo-&gt;dir != ultimo</code>: laço infinito entre o nó e sua direita.</li>
+      <li>Na busca, esquecer o <code>return</code> das chamadas recursivas.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ======================= MÓDULO 4 ======================= -->
+<section class="mod" id="m4">
+  <h2><span class="num">4</span>ABB: inserção e remoção (LAB 10)</h2>
+  <p class="lide">Propriedade que toda operação precisa preservar: para cada nó, tudo à esquerda é menor e tudo à direita é maior.</p>
+
+  <h3>Propriedade da ABB</h3>
+  <p><code>esq &lt; raiz &lt; dir</code>, valendo para a subárvore inteira e não só para os filhos diretos. Consequência: o percurso em ordem sai crescente. Nestas notas, chaves repetidas são ignoradas na inserção; se o enunciado disser outra coisa, mude o <code>else if</code> para <code>else</code>.</p>
+
+  <h3>Inserção recursiva</h3>
+  <h4>Versão padrão: ponteiro simples, devolve a raiz</h4>
+  <div class="bloco" data-t="insere (uso: raiz = insere(raiz, x);)"><pre class="c">No *insere(No *r, int x) {
+    if (r == NULL) return novo_no(x);     // achou a vaga: o novo nó é a "raiz" daqui
+    if (x &lt; r-&gt;dado)
+        r-&gt;esq = insere(r-&gt;esq, x);       // religa a esquerda com o que voltar
+    else if (x &gt; r-&gt;dado)
+        r-&gt;dir = insere(r-&gt;dir, x);       // religa a direita com o que voltar
+    /* x == r-&gt;dado: repetido, ignora */
+    return r;                             // devolve a raiz desta subárvore
+}</pre></div>
+  <h4>Versão alternativa: ponteiro duplo, sem retorno</h4>
+  <div class="bloco" data-t="insere_pp (uso: insere_pp(&amp;raiz, x);)"><pre class="c">void insere_pp(No **r, int x) {
+    if (*r == NULL) {                     // *r é o ponteiro que está "vago"
+        *r = novo_no(x);                  // escreve direto no campo do pai
+        return;
+    }
+    if (x &lt; (*r)-&gt;dado)
+        insere_pp(&amp;(*r)-&gt;esq, x);         // passa o ENDEREÇO do campo esq
+    else if (x &gt; (*r)-&gt;dado)
+        insere_pp(&amp;(*r)-&gt;dir, x);         // passa o ENDEREÇO do campo dir
+}</pre></div>
+  <p>As duas fazem o mesmo. Na primeira quem religa é a atribuição <code>r-&gt;esq = insere(...)</code>; na segunda é a escrita em <code>*r</code>. Na prova, escolha uma e não misture.</p>
+
+  <h3>Remoção: os três casos</h3>
+  <h4>Caso 1: folha</h4>
+  <p>Libera o nó e o ponteiro do pai vira <code>NULL</code>.</p>
+  <pre class="ascii">      50                          50
+     /  \                        /  \
+   30    70         ==&gt;        30    70
+  /  \   / \                     \   / \
+20   40 60  80                   40 60  80
+^^ folha                 o campo esq do 30 vira NULL; free no nó 20</pre>
+  <h4>Caso 2: um filho</h4>
+  <p>O pai passa a apontar para o neto e o nó é liberado.</p>
+  <pre class="ascii">   50                          50
+  /  \                        /  \
+30    70         ==&gt;        40    70
+  \   / \                         / \
+  40 60  80                      60  80
+^^ só tem o filho 40    o campo esq do 50 passa a apontar para o 40; free no nó 30</pre>
+  <h4>Caso 3: dois filhos</h4>
+  <p>O nó não é liberado. Seu valor é trocado pelo do sucessor em ordem (o menor da subárvore direita) e quem sai fisicamente é o sucessor, que cai no caso 1 ou 2.</p>
+  <pre class="ascii">      50  &lt;- remover            60  &lt;- valor copiado          60
+     /  \                      /  \                          /  \
+   40    70        ==&gt;       40    70          ==&gt;         40    70
+        /  \                      /  \                             \
+      60    80                  60    80                            80
+      ^^ sucessor               ^^ duplicado: remover da subárvore direita
+
+Sucessor = um passo à direita, depois tudo à esquerda. Ele nunca tem filho esquerdo.</pre>
+
+  <h3>Remoção recursiva</h3>
+  <p>Mesma lógica de religação da inserção: cada chamada devolve a nova raiz da subárvore. Os casos 1 e 2 se fundem: se não há filho esquerdo, devolve o direito (que pode ser <code>NULL</code>).</p>
+  <div class="bloco" data-t="remove_no (uso: raiz = remove_no(raiz, x);)"><pre class="c">No *minimo(No *r) {                        // pré-condição: r != NULL
+    while (r-&gt;esq != NULL) r = r-&gt;esq;     // o menor está o mais à esquerda
+    return r;
+}
+
+No *remove_no(No *r, int x) {
+    if (r == NULL) return NULL;                    // x não está na árvore
+    if (x &lt; r-&gt;dado) {
+        r-&gt;esq = remove_no(r-&gt;esq, x);             // procura à esquerda e religa
+    } else if (x &gt; r-&gt;dado) {
+        r-&gt;dir = remove_no(r-&gt;dir, x);             // procura à direita e religa
+    } else {                                       // achou: r é o nó a remover
+        if (r-&gt;esq == NULL) {                      // casos 1 e 2 (sem filho esq)
+            No *filho = r-&gt;dir;                    // pode ser NULL (folha)
+            free(r);
+            return filho;                          // o pai passa a apontar p/ o neto
+        }
+        if (r-&gt;dir == NULL) {                      // caso 2 (só filho esq)
+            No *filho = r-&gt;esq;
+            free(r);
+            return filho;
+        }
+        No *suc = minimo(r-&gt;dir);                  // caso 3: sucessor em ordem
+        r-&gt;dado = suc-&gt;dado;                       // copia o valor (r NÃO é liberado)
+        r-&gt;dir = remove_no(r-&gt;dir, suc-&gt;dado);     // remove o sucessor (cai no caso 1 ou 2)
+    }
+    return r;
+}</pre></div>
+
+  <h3>Remoção iterativa</h3>
+  <p>O truque é andar com um <code>No **p</code> que aponta para o campo por onde se chega ao nó atual: no começo é a própria raiz, depois o <code>esq</code> ou <code>dir</code> do pai. Assim <code>*p = ...</code> religa o pai sem precisar de variável <code>pai</code> nem de caso especial para a raiz.</p>
+  <div class="bloco" data-t="remove_iter (uso: remove_iter(&amp;raiz, x);)"><pre class="c">int remove_iter(No **raiz, int x) {
+    No **p = raiz;                    // p = endereço do ponteiro que chega ao nó atual
+    while (*p != NULL &amp;&amp; (*p)-&gt;dado != x) {
+        if (x &lt; (*p)-&gt;dado) p = &amp;(*p)-&gt;esq;    // desce guardando o campo do pai
+        else p = &amp;(*p)-&gt;dir;
+    }
+    if (*p == NULL) return 0;         // não encontrou: nada removido
+
+    No *alvo = *p;                    // nó que contém x
+    if (alvo-&gt;esq != NULL &amp;&amp; alvo-&gt;dir != NULL) {   // caso 3
+        No **ps = &amp;alvo-&gt;dir;                       // um passo à direita...
+        while ((*ps)-&gt;esq != NULL) ps = &amp;(*ps)-&gt;esq;   // ...e tudo à esquerda
+        alvo-&gt;dado = (*ps)-&gt;dado;     // copia o valor do sucessor
+        p = ps;                       // agora quem sai fisicamente é o sucessor
+        alvo = *ps;                   // (ele tem no máximo o filho direito)
+    }
+    /* aqui alvo tem 0 ou 1 filho (casos 1 e 2) */
+    if (alvo-&gt;esq != NULL) *p = alvo-&gt;esq;   // pai herda o único filho...
+    else *p = alvo-&gt;dir;                     // ...ou NULL, se era folha
+    free(alvo);
+    return 1;                         // removeu
+}</pre></div>
+
+  <h3>Contagem de nós</h3>
+  <div class="bloco" data-t="conta_nos"><pre class="c">int conta_nos(No *r) {
+    if (r == NULL) return 0;                           // árvore vazia: 0 nós
+    return 1 + conta_nos(r-&gt;esq) + conta_nos(r-&gt;dir);  // eu + esquerda + direita
+}</pre></div>
+
+  <h3>LAB 10: programa completo</h3>
+  <p>Exigências do enunciado: inserção recursiva; remoção iterativa; nenhuma variável global; toda memória desalocada. Aqui a versão recursiva da remoção não pode ser entregue: use <code>remove_iter</code>.</p>
+  <div class="rolagem"><table>
+    <tr><th></th><th>Formato</th></tr>
+    <tr><td>Entrada</td><td>linha 1: <i>n</i>. Linha 2: <i>n</i> inteiros a inserir. Linha 3: <i>m</i>. Linha 4: <i>m</i> inteiros a remover.</td></tr>
+    <tr><td>Saída, linha 1</td><td>percurso em nível, valores colados</td></tr>
+    <tr><td>Saída, linha 2</td><td>número de nós restantes após as remoções</td></tr>
+  </table></div>
+  <pre class="ascii">Entrada                                    Saída
+13                                         5630702240609511653166367     em nível, 13 nós
+56 30 22 11 3 16 40 70 60 65 63 67 95      9                             nós após remover
+4
+16 22 40 95</pre>
+  <p class="nota"><strong>Em nível antes de remover.</strong> A primeira linha do exemplo oficial tem os 13 valores inseridos, inclusive 16, 22, 40 e 95, que são removidos em seguida. Ou seja, o percurso em nível é o da árvore recém-montada; só a contagem da segunda linha reflete as remoções. O texto do enunciado não deixa isso explícito, mas é o que o exemplo mostra, e o programa abaixo segue o exemplo. Se o juiz recusar, o primeiro teste a fazer é mover a chamada de <code>em_nivel</code> para depois do laço de remoções (a saída passaria a ser <code>56307011603656367</code>).</p>
+  <pre class="ascii">             56                                      56
+           /    \                                  /    \
+         30      70                              30      70
+        /  \    /  \                            /       /
+      22    40 60    95          ==&gt;           11      60
+     /           \                            /          \
+   11             65                         3            65
+  /  \           /  \                                    /  \
+ 3    16       63    67                                63    67
+
+remove 16: folha            remove 22: um filho (o 30 passa a apontar para o 11)
+remove 40: folha            remove 95: folha</pre>
+  <div class="bloco" data-t="LAB 10, arquivo completo (saída idêntica à do exemplo oficial)"><pre class="c">/*
+ * AED I - Laboratório X: ABB com inserção recursiva e remoção iterativa
+ * Nome: ...                RA: ...
+ * Entrada: n; n chaves a inserir; m; m chaves a remover
+ * Saída:   percurso em nível da árvore montada (valores colados) e o número de nós após as remoções
+ */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct No {
+    int dado;            // chave inteira guardada no nó
+    struct No *esq;      // raiz da subárvore esquerda (NULL = vazia)
+    struct No *dir;      // raiz da subárvore direita  (NULL = vazia)
+} No;
+
+No *novo_no(int dado) {
+    No *n = malloc(sizeof(No));   // sizeof(No), nunca sizeof(No *)
+    if (n == NULL) return NULL;   // sem memória: devolve NULL
+    n-&gt;dado = dado;
+    n-&gt;esq = NULL;                // malloc NÃO zera: inicialize sempre
+    n-&gt;dir = NULL;
+    return n;                     // o endereço sobrevive ao fim da função
+}
+
+No *insere(No *r, int x) {
+    if (r == NULL) return novo_no(x);     // achou a vaga: o novo nó é a "raiz" daqui
+    if (x &lt; r-&gt;dado)
+        r-&gt;esq = insere(r-&gt;esq, x);       // religa a esquerda com o que voltar
+    else if (x &gt; r-&gt;dado)
+        r-&gt;dir = insere(r-&gt;dir, x);       // religa a direita com o que voltar
+    /* x == r-&gt;dado: repetido, ignora */
+    return r;                             // devolve a raiz desta subárvore
+}
+
+int remove_iter(No **raiz, int x) {
+    No **p = raiz;                    // p = endereço do ponteiro que chega ao nó atual
+    while (*p != NULL &amp;&amp; (*p)-&gt;dado != x) {
+        if (x &lt; (*p)-&gt;dado) p = &amp;(*p)-&gt;esq;    // desce guardando o campo do pai
+        else p = &amp;(*p)-&gt;dir;
+    }
+    if (*p == NULL) return 0;         // não encontrou: nada removido
+
+    No *alvo = *p;                    // nó que contém x
+    if (alvo-&gt;esq != NULL &amp;&amp; alvo-&gt;dir != NULL) {   // caso 3
+        No **ps = &amp;alvo-&gt;dir;                       // um passo à direita...
+        while ((*ps)-&gt;esq != NULL) ps = &amp;(*ps)-&gt;esq;   // ...e tudo à esquerda
+        alvo-&gt;dado = (*ps)-&gt;dado;     // copia o valor do sucessor
+        p = ps;                       // agora quem sai fisicamente é o sucessor
+        alvo = *ps;                   // (ele tem no máximo o filho direito)
+    }
+    /* aqui alvo tem 0 ou 1 filho (casos 1 e 2) */
+    if (alvo-&gt;esq != NULL) *p = alvo-&gt;esq;   // pai herda o único filho...
+    else *p = alvo-&gt;dir;                     // ...ou NULL, se era folha
+    free(alvo);
+    return 1;                         // removeu
+}
+
+typedef struct Cel {
+    No *no;                // a fila guarda PONTEIROS para nós da árvore
+    struct Cel *prox;
+} Cel;
+
+typedef struct {
+    Cel *ini;              // de onde se retira
+    Cel *fim;              // onde se insere
+} Fila;
+
+void fila_inicia(Fila *f) { f-&gt;ini = NULL; f-&gt;fim = NULL; }
+
+int fila_vazia(Fila *f) { return f-&gt;ini == NULL; }
+
+void enfileira(Fila *f, No *no) {
+    Cel *c = malloc(sizeof(Cel));       // nova célula na Heap
+    c-&gt;no = no;
+    c-&gt;prox = NULL;                     // será a última
+    if (f-&gt;fim == NULL) f-&gt;ini = c;     // fila vazia: também é a primeira
+    else f-&gt;fim-&gt;prox = c;              // senão, engata após a última
+    f-&gt;fim = c;                         // fim passa a ser a nova célula
+}
+
+No *desenfileira(Fila *f) {             // pré-condição: fila não vazia
+    Cel *c = f-&gt;ini;                    // célula que vai sair
+    No *no = c-&gt;no;                     // salva o conteúdo ANTES do free
+    f-&gt;ini = c-&gt;prox;                   // início avança
+    if (f-&gt;ini == NULL) f-&gt;fim = NULL;  // esvaziou: fim também vira NULL
+    free(c);                            // libera a célula (não o nó da árvore)
+    return no;
+}
+
+void em_nivel(No *r) {
+    if (r == NULL) return;             // árvore vazia: não enfileira NULL
+    Fila f;                            // a struct Fila fica na Stack
+    fila_inicia(&amp;f);
+    enfileira(&amp;f, r);                  // começa pela raiz
+    while (!fila_vazia(&amp;f)) {
+        No *n = desenfileira(&amp;f);      // sai o mais antigo (FIFO)
+        printf("%d", n-&gt;dado);        // visita
+        if (n-&gt;esq != NULL) enfileira(&amp;f, n-&gt;esq);   // filhos entram no fim,
+        if (n-&gt;dir != NULL) enfileira(&amp;f, n-&gt;dir);   // esquerda antes da direita
+    }
+}                                      // fila esvaziou: todas as células liberadas
+
+int conta_nos(No *r) {
+    if (r == NULL) return 0;                           // árvore vazia: 0 nós
+    return 1 + conta_nos(r-&gt;esq) + conta_nos(r-&gt;dir);  // eu + esquerda + direita
+}
+
+void destroi_arvore(No *r) {
+    if (r == NULL) return;        // caso base: nada a liberar
+    destroi_arvore(r-&gt;esq);       // 1º libera toda a esquerda
+    destroi_arvore(r-&gt;dir);       // 2º libera toda a direita
+    free(r);                      // 3º só agora libera a raiz (pós-ordem)
+}
+
+int main(void) {
+    No *raiz = NULL;
+    int n, m, valor;
+
+    if (scanf("%d", &amp;n) != 1) return 0;
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;valor);
+        raiz = insere(raiz, valor);        // inserção RECURSIVA (exigência 1)
+    }
+
+    em_nivel(raiz);  printf("\n");         // linha 1: em nível, ANTES das remoções
+
+    scanf("%d", &amp;m);                       // 3ª linha: quantas remoções
+    for (int i = 0; i &lt; m; i++) {
+        scanf("%d", &amp;valor);
+        remove_iter(&amp;raiz, valor);         // remoção ITERATIVA (exigência 2)
+    }
+
+    printf("%d\n", conta_nos(raiz));       // linha 2: nós que restaram
+
+    destroi_arvore(raiz);                  // o que sobrou também é liberado
+    return 0;
+}</pre></div>
+  <p class="nota"><strong>Sucessor ou antecessor.</strong> O exemplo oficial só remove folhas e um nó com um filho, então não mostra qual substituto o juiz espera no caso de dois filhos. Este material usa o sucessor (menor da subárvore direita). Se os slides da sua turma usarem o antecessor (maior da subárvore esquerda), troque em <code>remove_iter</code> as duas linhas da busca por <code>No **ps = &amp;alvo-&gt;esq;</code> e <code>while ((*ps)-&gt;dir != NULL) ps = &amp;(*ps)-&gt;dir;</code>. O restante da função não muda. Com a ordem de saída do exemplo essa escolha não altera o resultado, porque o percurso é impresso antes das remoções e a contagem é a mesma.</p>
+  <p>Conferência das funções com a árvore do Módulo 3: removendo 20, 30 e 50 restam 4 nós, com pré-ordem <code>60 40 70 80</code>.</p>
+
+  <div class="armadilha">
+    <h3>Armadilhas clássicas de prova em papel</h3>
+    <ul>
+      <li>Escrever <code>insere(r-&gt;esq, x);</code> sem a atribuição <code>r-&gt;esq =</code>. O nó é criado e nunca ligado.</li>
+      <li>Esquecer o <code>return r;</code> final de <code>insere</code> ou <code>remove_no</code>: a subárvore inteira se perde.</li>
+      <li>No caso 3, dar <code>free</code> no nó de dois filhos. Ele fica; só o valor muda.</li>
+      <li>No caso 3, chamar <code>remove_no(r-&gt;dir, x)</code>. O valor a remover agora é <code>suc-&gt;dado</code>.</li>
+      <li>Tomar como sucessor o filho direito. É o mais à esquerda da subárvore direita.</li>
+      <li>Fazer <code>free(r); return r-&gt;dir;</code>. Guarde o filho em uma variável antes do <code>free</code>.</li>
+      <li>Na versão iterativa com variável <code>pai</code>, esquecer que a raiz não tem pai.</li>
+    </ul>
+  </div>
+</section>
+<!-- ======================= MÓDULO 5 ======================= -->
+<section class="mod" id="m5">
+  <h2><span class="num">5</span>Árvores genéricas (n-árias)</h2>
+  <p class="lide">Cada nó pode ter qualquer número de filhos. Em C, dois ponteiros por nó bastam.</p>
+
+  <h3>Conceito</h3>
+  <p>O grau de um nó é o número de filhos; o grau da árvore é o maior grau entre os nós. Como o grau não é conhecido de antemão, um vetor fixo de filhos desperdiça memória ou limita a árvore. A saída clássica é guardar os filhos de um nó em uma lista encadeada.</p>
+
+  <h3>Representação primeiro filho / irmão seguinte</h3>
+  <div class="bloco" data-t="struct NoGen"><pre class="c">typedef struct NoGen {
+    int info;
+    struct NoGen *filho;    // PRIMEIRO filho (o mais à esquerda)
+    struct NoGen *irmao;    // PRÓXIMO irmão (mesmo pai, à direita)
+} NoGen;</pre></div>
+  <figure>
+    <svg viewBox="0 0 620 240" role="img" aria-label="À esquerda, árvore geral com raiz 1, filhos 2, 3 e 4; o nó 2 tem filhos 5 e 6, o nó 4 tem filho 7. À direita, a mesma árvore com ponteiros de primeiro filho e de irmão seguinte.">
+      <defs>
+        <marker id="sa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="seta-a" d="M0 0L10 5L0 10z"/></marker>
+        <marker id="sv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="seta-v" d="M0 0L10 5L0 10z"/></marker>
+      </defs>
+      <text class="rotulo" x="20" y="18">árvore geral</text>
+      <line class="aresta" x1="130" y1="50" x2="60" y2="125"/><line class="aresta" x1="130" y1="50" x2="130" y2="125"/><line class="aresta" x1="130" y1="50" x2="200" y2="125"/>
+      <line class="aresta" x1="60" y1="125" x2="30" y2="205"/><line class="aresta" x1="60" y1="125" x2="95" y2="205"/><line class="aresta" x1="200" y1="125" x2="200" y2="205"/>
+      <g class="no"><circle cx="130" cy="50" r="19"/><text x="130" y="50">1</text></g>
+      <g class="no"><circle cx="60" cy="125" r="19"/><text x="60" y="125">2</text></g>
+      <g class="no"><circle cx="130" cy="125" r="19"/><text x="130" y="125">3</text></g>
+      <g class="no"><circle cx="200" cy="125" r="19"/><text x="200" y="125">4</text></g>
+      <g class="no"><circle cx="30" cy="205" r="19"/><text x="30" y="205">5</text></g>
+      <g class="no"><circle cx="95" cy="205" r="19"/><text x="95" y="205">6</text></g>
+      <g class="no"><circle cx="200" cy="205" r="19"/><text x="200" y="205">7</text></g>
+
+      <text class="rotulo" x="345" y="18">cheia = filho, tracejada = irmao</text>
+      <line class="solida" x1="370" y1="69" x2="370" y2="104" marker-end="url(#sa)"/>
+      <line class="solida" x1="370" y1="144" x2="370" y2="184" marker-end="url(#sa)"/>
+      <line class="solida" x1="550" y1="144" x2="550" y2="184" marker-end="url(#sa)"/>
+      <line class="tracejada" x1="389" y1="125" x2="439" y2="125" marker-end="url(#sv)"/>
+      <line class="tracejada" x1="479" y1="125" x2="529" y2="125" marker-end="url(#sv)"/>
+      <line class="tracejada" x1="389" y1="205" x2="419" y2="205" marker-end="url(#sv)"/>
+      <g class="no"><circle cx="370" cy="50" r="19"/><text x="370" y="50">1</text></g>
+      <g class="no"><circle cx="370" cy="125" r="19"/><text x="370" y="125">2</text></g>
+      <g class="no"><circle cx="460" cy="125" r="19"/><text x="460" y="125">3</text></g>
+      <g class="no"><circle cx="550" cy="125" r="19"/><text x="550" y="125">4</text></g>
+      <g class="no"><circle cx="370" cy="205" r="19"/><text x="370" y="205">5</text></g>
+      <g class="no"><circle cx="440" cy="205" r="19"/><text x="440" y="205">6</text></g>
+      <g class="no"><circle cx="550" cy="205" r="19"/><text x="550" y="205">7</text></g>
+    </svg>
+    <figcaption>Cada nó guarda só o primeiro filho; os demais são alcançados pela corrente de irmãos. Lendo <code>filho</code> como “esq” e <code>irmao</code> como “dir”, a árvore geral vira estruturalmente uma árvore binária.</figcaption>
+  </figure>
+  <pre class="ascii">cada nó:  [ info | filho | irmao ]
+
+[1|*|/]
+   |
+   v
+[2|*|*]---------------&gt;[3|/|*]--&gt;[4|*|/]
+   |                                |
+   v                                v
+[5|/|*]--&gt;[6|/|/]                [7|/|/]
+
+* = ponteiro válido     / = NULL     seta para baixo = filho     seta para o lado = irmao</pre>
+
+  <h3>Criação, inserção de filho, exibição e limpeza</h3>
+  <div class="bloco" data-t="árvore genérica"><pre class="c">NoGen *cria_no(int info) {
+    NoGen *n = malloc(sizeof(NoGen));
+    if (n == NULL) return NULL;
+    n-&gt;info = info;
+    n-&gt;filho = NULL;                  // nasce sem filhos
+    n-&gt;irmao = NULL;                  // e sem irmãos
+    return n;
+}
+
+/* Insere novo como ÚLTIMO filho de pai (preserva a ordem de inserção) */
+void insere_filho(NoGen *pai, NoGen *novo) {
+    if (pai-&gt;filho == NULL) {         // pai ainda não tinha filhos
+        pai-&gt;filho = novo;
+        return;
+    }
+    NoGen *p = pai-&gt;filho;            // percorre a lista de irmãos
+    while (p-&gt;irmao != NULL) p = p-&gt;irmao;
+    p-&gt;irmao = novo;                  // engata no fim
+}
+
+/* Exibe em pré-ordem, com 2 espaços de recuo por nível */
+void exibe(NoGen *r, int nivel) {
+    if (r == NULL) return;
+    for (int i = 0; i &lt; nivel; i++) printf("  ");
+    printf("%d\n", r-&gt;info);
+    exibe(r-&gt;filho, nivel + 1);       // filhos ficam um nível ABAIXO
+    exibe(r-&gt;irmao, nivel);           // irmãos ficam no MESMO nível
+}
+
+int altura(NoGen *r) {                // árvore vazia = -1; só a raiz = 0
+    if (r == NULL) return -1;
+    int hf = 1 + altura(r-&gt;filho);    // descer para o filho soma 1
+    int hi = altura(r-&gt;irmao);        // andar para o irmão não soma
+    return hf &gt; hi ? hf : hi;
+}
+
+void destroi_gen(NoGen *r) {
+    if (r == NULL) return;
+    destroi_gen(r-&gt;filho);            // libera os descendentes
+    destroi_gen(r-&gt;irmao);            // libera os irmãos à direita
+    free(r);                          // por último, o próprio nó
+}</pre></div>
+  <p>Para a árvore da figura, <code>exibe(raiz, 0)</code> visita na ordem 1, 2, 5, 6, 3, 4, 7 (pré-ordem) e <code>altura(raiz)</code> devolve 2.</p>
+  <p class="nota"><strong>Inserção em O(1).</strong> Se a ordem dos filhos não importa, insira no início da lista: <code>novo-&gt;irmao = pai-&gt;filho; pai-&gt;filho = novo;</code></p>
+
+  <div class="armadilha">
+    <h3>Armadilhas clássicas de prova em papel</h3>
+    <ul>
+      <li>Tratar <code>irmao</code> como filho: em <code>exibe</code> e <code>altura</code>, o irmão fica no mesmo nível, sem somar 1.</li>
+      <li>Em <code>insere_filho</code>, esquecer o caso em que o pai ainda não tem filho e acessar <code>p-&gt;irmao</code> com <code>p == NULL</code>.</li>
+      <li>Liberar só a corrente de filhos e esquecer a de irmãos, ou dar <code>free(r)</code> antes das duas chamadas.</li>
+      <li>Testar folha com <code>filho == NULL &amp;&amp; irmao == NULL</code>. Folha é só <code>filho == NULL</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ======================= MÓDULO 6 ======================= -->
+<section class="mod" id="m6">
+  <h2><span class="num">6</span>Grafos e digrafos</h2>
+  <p class="lide">Vértices ligados por arestas, sem raiz e sem hierarquia. A escolha da representação define o custo de cada operação.</p>
+
+  <h3>Definições</h3>
+  <ul>
+    <li><strong>Grafo</strong> <i>G</i> = (<i>V</i>, <i>E</i>): <i>V</i> é o conjunto de vértices e <i>E</i> o de arestas, pares de vértices.</li>
+    <li><strong>Não direcionado:</strong> a aresta {<i>u</i>, <i>v</i>} vale nos dois sentidos. <strong>Digrafo:</strong> o arco (<i>u</i>, <i>v</i>) sai de <i>u</i> e chega em <i>v</i>.</li>
+    <li><strong>Adjacência:</strong> <i>v</i> é adjacente a <i>u</i> se existe aresta de <i>u</i> para <i>v</i>.</li>
+    <li><strong>Grau:</strong> número de arestas incidentes no vértice. Em digrafos há grau de saída e grau de entrada.</li>
+    <li>Soma dos graus de um grafo não direcionado: 2|<i>E</i>|. Em um digrafo, soma das saídas = soma das entradas = |<i>E</i>|.</li>
+    <li><strong>Caminho:</strong> sequência de vértices em que cada par consecutivo é ligado por aresta. <strong>Ciclo:</strong> caminho que volta ao início.</li>
+    <li><strong>Conexo:</strong> existe caminho entre qualquer par de vértices. Em digrafos, <strong>fortemente conexo</strong> exige caminho nos dois sentidos.</li>
+    <li>Máximo de arestas sem laços: |<i>V</i>|(|<i>V</i>| − 1)/2 no não direcionado; |<i>V</i>|(|<i>V</i>| − 1) no digrafo.</li>
+  </ul>
+  <figure>
+    <svg viewBox="0 0 380 190" role="img" aria-label="Grafo não direcionado com vértices 0 a 4 e arestas 0-1, 0-2, 1-2, 1-3 e 3-4" style="max-width:460px">
+      <line class="aresta" x1="60" y1="50" x2="190" y2="50"/><line class="aresta" x1="60" y1="50" x2="125" y2="145"/>
+      <line class="aresta" x1="190" y1="50" x2="125" y2="145"/><line class="aresta" x1="190" y1="50" x2="320" y2="50"/>
+      <line class="aresta" x1="320" y1="50" x2="320" y2="145"/>
+      <g class="no"><circle cx="60" cy="50" r="20"/><text x="60" y="50">0</text></g>
+      <g class="no"><circle cx="190" cy="50" r="20"/><text x="190" y="50">1</text></g>
+      <g class="no"><circle cx="125" cy="145" r="20"/><text x="125" y="145">2</text></g>
+      <g class="no"><circle cx="320" cy="50" r="20"/><text x="320" y="50">3</text></g>
+      <g class="no"><circle cx="320" cy="145" r="20"/><text x="320" y="145">4</text></g>
+    </svg>
+    <figcaption>Grafo de exemplo: |<i>V</i>| = 5, |<i>E</i>| = 5. Graus: 2, 3, 2, 2, 1 (soma 10 = 2|<i>E</i>|). As duas representações abaixo descrevem este grafo.</figcaption>
+  </figure>
+
+  <h3>1. Matriz de adjacência</h3>
+  <p><code>adj[u][v] = 1</code> se existe aresta de <i>u</i> para <i>v</i>, senão 0. Em grafo não direcionado a matriz é simétrica.</p>
+  <div class="rolagem" style="width:max-content;max-width:100%"><table class="matriz">
+    <tr><th></th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+    <tr><th>0</th><td>0</td><td class="um">1</td><td class="um">1</td><td>0</td><td>0</td></tr>
+    <tr><th>1</th><td class="um">1</td><td>0</td><td class="um">1</td><td class="um">1</td><td>0</td></tr>
+    <tr><th>2</th><td class="um">1</td><td class="um">1</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><th>3</th><td>0</td><td class="um">1</td><td>0</td><td>0</td><td class="um">1</td></tr>
+    <tr><th>4</th><td>0</td><td>0</td><td>0</td><td class="um">1</td><td>0</td></tr>
+  </table></div>
+  <h4>Estática</h4>
+  <div class="bloco" data-t="matriz estática"><pre class="c">#define MAXV 100                       // constante de pré-processador, não é variável global
+
+void zera(int adj[MAXV][MAXV], int V) {
+    for (int i = 0; i &lt; V; i++)
+        for (int j = 0; j &lt; V; j++)
+            adj[i][j] = 0;             // 0 = sem aresta
+}
+
+/* dentro do main:
+     int adj[MAXV][MAXV];              // na Stack do main, sem malloc e sem free
+     zera(adj, V);
+     adj[u][v] = 1;                    // arco u -&gt; v
+     adj[v][u] = 1;                    // só se o grafo NÃO for direcionado      */</pre></div>
+  <h4>Alocada dinamicamente</h4>
+  <div class="bloco" data-t="matriz dinâmica V × V"><pre class="c">int **cria_matriz(int V) {
+    int **m = malloc(V * sizeof(int *));     // vetor de V ponteiros (as linhas)
+    for (int i = 0; i &lt; V; i++)
+        m[i] = calloc(V, sizeof(int));       // cada linha: V inteiros já zerados
+    return m;
+}
+
+void insere_m(int **m, int u, int v, int direcionado) {
+    m[u][v] = 1;                             // arco u -&gt; v
+    if (!direcionado) m[v][u] = 1;           // não direcionado: espelha
+}
+
+int adjacente_m(int **m, int u, int v) {
+    return m[u][v];                          // consulta em O(1)
+}
+
+void libera_matriz(int **m, int V) {
+    for (int i = 0; i &lt; V; i++) free(m[i]);  // 1º cada linha
+    free(m);                                 // 2º o vetor de ponteiros
+}</pre></div>
+  <div class="rolagem"><table>
+    <tr><th>Vantagens</th><th>Desvantagens</th></tr>
+    <tr><td>Testar se <i>u</i> e <i>v</i> são adjacentes em O(1)</td><td>Espaço O(|<i>V</i>|²) mesmo com poucas arestas</td></tr>
+    <tr><td>Inserir e remover aresta em O(1)</td><td>Listar os vizinhos de <i>u</i> custa O(|<i>V</i>|)</td></tr>
+    <tr><td>Simples de escrever em papel</td><td>Percorrer o grafo todo custa O(|<i>V</i>|²)</td></tr>
+  </table></div>
+
+  <h3>2. Listas de adjacência</h3>
+  <p>Um vetor com |<i>V</i>| cabeças de lista; a lista de <i>u</i> tem um nó para cada vizinho. Espaço O(|<i>V</i>| + |<i>E</i>|): bom para grafos esparsos.</p>
+  <pre class="ascii">adj[0] --&gt; [2] --&gt; [1] --&gt; NULL
+adj[1] --&gt; [3] --&gt; [2] --&gt; [0] --&gt; NULL
+adj[2] --&gt; [1] --&gt; [0] --&gt; NULL
+adj[3] --&gt; [4] --&gt; [1] --&gt; NULL
+adj[4] --&gt; [3] --&gt; NULL
+
+Inserção no início: o vizinho inserido por último aparece primeiro.
+Arestas inseridas na ordem (0,1) (0,2) (1,2) (1,3) (3,4).</pre>
+  <div class="bloco" data-t="listas de adjacência"><pre class="c">typedef struct Aresta {
+    int v;                     // vértice de destino
+    struct Aresta *prox;       // próximo vizinho na lista
+} Aresta;
+
+typedef struct {
+    int V;                     // número de vértices
+    Aresta **adj;              // adj[u] = cabeça da lista de vizinhos de u
+} Grafo;
+
+Grafo *cria_grafo(int V) {
+    Grafo *g = malloc(sizeof(Grafo));
+    g-&gt;V = V;
+    g-&gt;adj = calloc(V, sizeof(Aresta *));    // V cabeças, todas NULL
+    return g;
+}
+
+void insere_arco(Grafo *g, int u, int v) {   // direcionado: u -&gt; v
+    Aresta *a = malloc(sizeof(Aresta));
+    a-&gt;v = v;
+    a-&gt;prox = g-&gt;adj[u];       // novo aponta para a cabeça antiga
+    g-&gt;adj[u] = a;             // inserção no INÍCIO: O(1)
+}
+
+void insere_aresta(Grafo *g, int u, int v) { // não direcionado: u — v
+    insere_arco(g, u, v);
+    insere_arco(g, v, u);      // a mesma aresta aparece nas duas listas
+}
+
+int adjacente_l(Grafo *g, int u, int v) {
+    for (Aresta *a = g-&gt;adj[u]; a != NULL; a = a-&gt;prox)
+        if (a-&gt;v == v) return 1;             // v está na lista de u
+    return 0;                                // custo O(grau(u))
+}
+
+void libera_grafo(Grafo *g) {
+    for (int u = 0; u &lt; g-&gt;V; u++) {
+        Aresta *a = g-&gt;adj[u];
+        while (a != NULL) {
+            Aresta *prox = a-&gt;prox;          // salva o próximo ANTES do free
+            free(a);
+            a = prox;
+        }
+    }
+    free(g-&gt;adj);                            // depois o vetor de cabeças
+    free(g);                                 // por último a struct
+}</pre></div>
+  <p>No grafo não direcionado cada aresta gera dois nós de lista, um em cada extremidade. No digrafo, use só <code>insere_arco</code>.</p>
+
+  <h3>Checar adjacência: resumo</h3>
+  <div class="rolagem"><table>
+    <tr><th></th><th>Matriz</th><th>Listas</th></tr>
+    <tr><td><i>u</i> e <i>v</i> são adjacentes?</td><td class="m">m[u][v] : O(1)</td><td class="m">percorre adj[u] : O(grau(u))</td></tr>
+    <tr><td>Grau de <i>u</i></td><td class="m">soma a linha u : O(|V|)</td><td class="m">conta a lista : O(grau(u))</td></tr>
+    <tr><td>Espaço</td><td class="m">O(|V|²)</td><td class="m">O(|V| + |E|)</td></tr>
+  </table></div>
+
+  <div class="armadilha">
+    <h3>Armadilhas clássicas de prova em papel</h3>
+    <ul>
+      <li>Grafo não direcionado com só <code>m[u][v] = 1</code>, sem o espelho <code>m[v][u] = 1</code>.</li>
+      <li><code>malloc(V * sizeof(int))</code> para o vetor de linhas. São ponteiros: <code>sizeof(int *)</code>.</li>
+      <li>Usar <code>malloc</code> nas linhas e esquecer de zerar. <code>calloc</code> já zera.</li>
+      <li>Liberar <code>free(m)</code> antes das linhas: os endereços das linhas se perdem.</li>
+      <li>Em <code>libera_grafo</code>, fazer <code>free(a); a = a-&gt;prox;</code>.</li>
+      <li>Vértices numerados de 1 a <i>V</i> no enunciado e vetor de 0 a <i>V</i> − 1 no código: subtraia 1 na leitura ou aloque <i>V</i> + 1.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ======================= MÓDULO 7 ======================= -->
+<section class="mod" id="m7">
+  <h2><span class="num">7</span>Simulado e testes mentais</h2>
+  <p class="lide">Papel, caneta, 1h50, sem olhar os módulos acima. Corrija com o critério da prova: está inteiro certo ou está errado.</p>
+
+  <div class="relogio" id="relogio">
+    <output id="tempo">1:50:00</output>
+    <button class="btn forte" id="btInicia">Iniciar prova</button>
+    <button class="btn" id="btZera">Zerar</button>
+    <small>Sugestão: 25 min por questão e 10 min de revisão final.</small>
+  </div>
+
+  <div class="questao">
+    <h3>Questão 1: contagem de instruções</h3>
+    <p>Considere o fragmento A, com <code>n ≥ 0</code>:</p>
+    <div class="bloco" data-t="fragmento A"><pre class="c">soma = 0;
+for (i = 0; i &lt; n; i++)
+    for (j = i; j &lt; n; j++)
+        soma++;</pre></div>
+    <p>(a) Contando cada atribuição, comparação e incremento como uma instrução, determine <i>f</i>(<i>n</i>). (b) Dê a complexidade em notação O. (c) Dê a complexidade do fragmento B e justifique.</p>
+    <div class="bloco" data-t="fragmento B"><pre class="c">for (i = 0; i &lt; n; i++)
+    for (j = 1; j &lt; n; j *= 2)
+        soma++;</pre></div>
+    <details class="gab"><summary>Gabarito comentado</summary><div class="dentro">
+      <p>O laço interno, para um <i>i</i> fixo, executa <i>n</i> − <i>i</i> vezes. Somando para <i>i</i> de 0 a <i>n</i> − 1: <i>n</i> + (<i>n</i> − 1) + … + 1 = <i>n</i>(<i>n</i> + 1)/2.</p>
+      <div class="rolagem"><table>
+        <tr><th>Instrução</th><th>Vezes</th></tr>
+        <tr><td class="m">soma = 0</td><td class="m">1</td></tr>
+        <tr><td class="m">i = 0</td><td class="m">1</td></tr>
+        <tr><td class="m">i &lt; n</td><td class="m">n + 1</td></tr>
+        <tr><td class="m">i++</td><td class="m">n</td></tr>
+        <tr><td class="m">j = i</td><td class="m">n</td></tr>
+        <tr><td class="m">j &lt; n</td><td class="m">n(n + 1)/2 + n</td></tr>
+        <tr><td class="m">j++</td><td class="m">n(n + 1)/2</td></tr>
+        <tr><td class="m">soma++</td><td class="m">n(n + 1)/2</td></tr>
+      </table></div>
+      <p>(a) <i>f</i>(<i>n</i>) = 3 + 4<i>n</i> + 3<i>n</i>(<i>n</i> + 1)/2 = (3<i>n</i>² + 11<i>n</i> + 6)/2. Conferência com <i>n</i> = 1: 10 instruções.</p>
+      <p>(b) O(<i>n</i>²).</p>
+      <p>(c) O laço externo roda <i>n</i> vezes. No interno, <i>j</i> dobra a cada volta (1, 2, 4, …) e para quando 2<sup><i>k</i></sup> ≥ <i>n</i>, ou seja, após cerca de log<sub>2</sub> <i>n</i> voltas, independentemente de <i>i</i>. Total: O(<i>n</i> log <i>n</i>).</p>
+      <p class="elimina">Onde se perde a questão: contar o teste <code>j &lt; n</code> sem o “+ 1” de cada rodada (o termo + <i>n</i>); responder <i>n</i>² para o laço triangular na função exata; responder O(<i>n</i>²) no fragmento B.</p>
+    </div></details>
+  </div>
+
+  <div class="questao">
+    <h3>Questão 2: inserção e percurso em ordem</h3>
+    <p>(a) Defina a <code>struct No</code> de uma ABB de inteiros. (b) Escreva a função recursiva <code>No *insere(No *r, int x)</code>, ignorando repetidos. (c) Escreva <code>void em_ordem(No *r)</code>. (d) Desenhe a árvore após inserir 40, 20, 60, 10, 30, 50, 70, 25, nessa ordem, e dê a saída de <code>em_ordem</code>.</p>
+    <details class="gab"><summary>Gabarito comentado</summary><div class="dentro">
+      <div class="bloco" data-t="resposta (a), (b), (c)"><pre class="c">typedef struct No {
+    int dado;            // chave inteira guardada no nó
+    struct No *esq;      // raiz da subárvore esquerda (NULL = vazia)
+    struct No *dir;      // raiz da subárvore direita  (NULL = vazia)
+} No;
+
+No *novo_no(int dado) {
+    No *n = malloc(sizeof(No));   // sizeof(No), nunca sizeof(No *)
+    if (n == NULL) return NULL;   // sem memória: devolve NULL
+    n-&gt;dado = dado;
+    n-&gt;esq = NULL;                // malloc NÃO zera: inicialize sempre
+    n-&gt;dir = NULL;
+    return n;                     // o endereço sobrevive ao fim da função
+}
+
+No *insere(No *r, int x) {
+    if (r == NULL) return novo_no(x);     // achou a vaga: o novo nó é a "raiz" daqui
+    if (x &lt; r-&gt;dado)
+        r-&gt;esq = insere(r-&gt;esq, x);       // religa a esquerda com o que voltar
+    else if (x &gt; r-&gt;dado)
+        r-&gt;dir = insere(r-&gt;dir, x);       // religa a direita com o que voltar
+    /* x == r-&gt;dado: repetido, ignora */
+    return r;                             // devolve a raiz desta subárvore
+}
+
+void em_ordem(No *r) {
+    if (r == NULL) return;
+    em_ordem(r-&gt;esq);          // Esquerda
+    printf("%d ", r-&gt;dado);    // Raiz
+    em_ordem(r-&gt;dir);          // Direita
+}</pre></div>
+      <pre class="ascii">       40
+     /    \
+   20      60
+  /  \    /  \
+10    30 50   70
+     /
+   25</pre>
+      <p>Saída: <code>10 20 25 30 40 50 60 70</code></p>
+      <p class="elimina">Onde se perde a questão: faltar <code>r-&gt;esq =</code> ou <code>r-&gt;dir =</code> na chamada recursiva; faltar <code>return r;</code>; nó novo sem ponteiros em <code>NULL</code>; <code>printf</code> fora do meio no percurso; pendurar o 25 à direita do 20 em vez de à esquerda do 30.</p>
+    </div></details>
+  </div>
+
+  <div class="questao">
+    <h3>Questão 3: remoção com dois filhos</h3>
+    <p>(a) Escreva <code>No *remove_no(No *r, int x)</code> para uma ABB, tratando todos os casos e usando o sucessor em ordem quando o nó tem dois filhos. (b) Na árvore final da Questão 2, mostre o resultado de remover a chave 20 e dê a pré-ordem da nova árvore.</p>
+    <details class="gab"><summary>Gabarito comentado</summary><div class="dentro">
+      <div class="bloco" data-t="resposta (a)"><pre class="c">No *minimo(No *r) {                        // pré-condição: r != NULL
+    while (r-&gt;esq != NULL) r = r-&gt;esq;     // o menor está o mais à esquerda
+    return r;
+}
+
+No *remove_no(No *r, int x) {
+    if (r == NULL) return NULL;                    // x não está na árvore
+    if (x &lt; r-&gt;dado) {
+        r-&gt;esq = remove_no(r-&gt;esq, x);             // procura à esquerda e religa
+    } else if (x &gt; r-&gt;dado) {
+        r-&gt;dir = remove_no(r-&gt;dir, x);             // procura à direita e religa
+    } else {                                       // achou: r é o nó a remover
+        if (r-&gt;esq == NULL) {                      // casos 1 e 2 (sem filho esq)
+            No *filho = r-&gt;dir;                    // pode ser NULL (folha)
+            free(r);
+            return filho;                          // o pai passa a apontar p/ o neto
+        }
+        if (r-&gt;dir == NULL) {                      // caso 2 (só filho esq)
+            No *filho = r-&gt;esq;
+            free(r);
+            return filho;
+        }
+        No *suc = minimo(r-&gt;dir);                  // caso 3: sucessor em ordem
+        r-&gt;dado = suc-&gt;dado;                       // copia o valor (r NÃO é liberado)
+        r-&gt;dir = remove_no(r-&gt;dir, suc-&gt;dado);     // remove o sucessor (cai no caso 1 ou 2)
+    }
+    return r;
+}</pre></div>
+      <p>(b) O nó 20 tem dois filhos. Sucessor: um passo à direita (30) e tudo à esquerda (25). O valor 25 sobe para o lugar do 20 e o nó 25 original, que é folha, é liberado.</p>
+      <pre class="ascii">       40                              40
+     /    \                          /    \
+   20      60                      25      60
+  /  \    /  \         ==&gt;        /  \    /  \
+10    30 50   70                10    30 50   70
+     /
+   25  &lt;- sucessor de 20</pre>
+      <p>Pré-ordem: <code>40 25 10 30 60 50 70</code></p>
+      <p class="elimina">Onde se perde a questão: <code>free</code> no nó de dois filhos; remover <code>x</code> em vez de <code>suc-&gt;dado</code> na subárvore direita; usar <code>r</code> depois do <code>free</code>; escolher o 30 como sucessor; esquecer o <code>return r;</code> final.</p>
+      <p>Alternativa do enunciado (árvore genérica): escrever <code>insere_filho</code> e <code>altura</code> do Módulo 5. O ponto eliminatório ali é somar 1 só ao descer para <code>filho</code>.</p>
+    </div></details>
+  </div>
+
+  <div class="questao">
+    <h3>Questão 4: grafo por listas e busca em largura</h3>
+    <p>Um grafo não direcionado com 6 vértices (0 a 5) é guardado em listas de adjacência com inserção no início. As arestas são inseridas na ordem (0,1), (0,3), (1,2), (1,4), (3,4), (4,5).</p>
+    <p>(a) Declare as structs <code>Aresta</code> e <code>Grafo</code> e escreva <code>insere_aresta</code>. (b) Desenhe as listas resultantes. (c) Escreva <code>void bfs(Grafo *g, int s)</code>, que imprime os vértices em ordem de largura a partir de <code>s</code>, sem variáveis globais e sem vazar memória. (d) Dê a saída de <code>bfs(g, 0)</code>.</p>
+    <details class="gab"><summary>Gabarito comentado</summary><div class="dentro">
+      <p>(a) Structs e inserção exatamente como no Módulo 6: <code>insere_aresta</code> chama <code>insere_arco</code> duas vezes.</p>
+      <p>(c) A fila pode ser um vetor de <i>V</i> inteiros, porque cada vértice é enfileirado no máximo uma vez:</p>
+      <div class="bloco" data-t="resposta (c)"><pre class="c">void bfs(Grafo *g, int s) {
+    int *visitado = calloc(g-&gt;V, sizeof(int));   // tudo 0 = ninguém visitado
+    int *fila = malloc(g-&gt;V * sizeof(int));      // cada vértice entra no máximo 1 vez
+    int ini = 0, fim = 0;                        // fila = fila[ini..fim-1]
+
+    visitado[s] = 1;                 // marca ao ENFILEIRAR
+    fila[fim++] = s;
+    while (ini &lt; fim) {              // enquanto a fila não está vazia
+        int u = fila[ini++];         // desenfileira
+        printf("%d ", u);            // visita
+        for (Aresta *a = g-&gt;adj[u]; a != NULL; a = a-&gt;prox) {
+            if (!visitado[a-&gt;v]) {
+                visitado[a-&gt;v] = 1;  // marca já aqui, senão entra duplicado
+                fila[fim++] = a-&gt;v;
+            }
+        }
+    }
+    free(visitado);                  // dois mallocs/callocs, dois frees
+    free(fila);
+}</pre></div>
+      <p>(b) e (d):</p>
+      <pre class="ascii">adj[0] --&gt; [3] --&gt; [1] --&gt; NULL
+adj[1] --&gt; [4] --&gt; [2] --&gt; [0] --&gt; NULL
+adj[2] --&gt; [1] --&gt; NULL
+adj[3] --&gt; [4] --&gt; [0] --&gt; NULL
+adj[4] --&gt; [5] --&gt; [3] --&gt; [1] --&gt; NULL
+adj[5] --&gt; [4] --&gt; NULL
+
+fila          sai    entram
+[0]           0      3, 1
+[3 1]         3      4
+[1 4]         1      2
+[4 2]         4      5
+[2 5]         2      -
+[5]           5      -
+
+Saída:  0 3 1 4 2 5</pre>
+      <p class="elimina">Onde se perde a questão: marcar <code>visitado</code> só ao desenfileirar (o vértice 4 entraria duas vezes e a fila de tamanho <i>V</i> estouraria); desenhar as listas na ordem de inserção, e não invertidas; esquecer um dos dois <code>free</code>; inserir a aresta em uma lista só.</p>
+      <p>Alternativa do enunciado (largura em árvore): <code>em_nivel</code> do Módulo 3 com a fila encadeada do Módulo 0. O raciocínio é o mesmo; na árvore não há vetor <code>visitado</code> porque não existem ciclos.</p>
+    </div></details>
+  </div>
+
+  <h3>Banco de testes mentais</h3>
+  <p>Responda de cabeça em até dez segundos cada. Depois abra para conferir.</p>
+  <details class="gab"><summary>Qual percurso de uma ABB sai em ordem crescente?</summary><div class="dentro"><p>Em ordem (Esq, Raiz, Dir).</p></div></details>
+  <details class="gab"><summary>Qual percurso se usa para liberar uma árvore, e por quê?</summary><div class="dentro"><p>Pós-ordem. O nó guarda os endereços dos filhos, então só pode ser liberado depois deles.</p></div></details>
+  <details class="gab"><summary>Em <code>for (i = 0; i &lt; n; i++)</code>, quantas vezes o teste é executado?</summary><div class="dentro"><p><i>n</i> + 1 vezes: <i>n</i> verdadeiras e a última, falsa.</p></div></details>
+  <details class="gab"><summary>Inserindo 1, 2, 3, 4, 5 nessa ordem em uma ABB vazia, qual é a altura?</summary><div class="dentro"><p>4 (contando arestas). A árvore degenera em lista para a direita e a busca passa a custar O(<i>n</i>).</p></div></details>
+  <details class="gab"><summary>O sucessor em ordem de um nó com dois filhos pode ter filho esquerdo?</summary><div class="dentro"><p>Não. Ele é o mais à esquerda da subárvore direita. Por isso sua remoção sempre cai no caso 1 ou 2.</p></div></details>
+  <details class="gab"><summary>Quantas comparações, no máximo, a busca binária faz em um vetor de 1000 elementos?</summary><div class="dentro"><p>⌊log<sub>2</sub> 1000⌋ + 1 = 9 + 1 = 10.</p></div></details>
+  <details class="gab"><summary>Por que <code>(*r)-&gt;esq</code> precisa de parênteses?</summary><div class="dentro"><p><code>-&gt;</code> tem precedência maior que <code>*</code>. Sem parênteses, o compilador lê <code>*(r-&gt;esq)</code>, e <code>r</code> é <code>No **</code>, que não tem campos.</p></div></details>
+  <details class="gab"><summary>Qual estrutura auxiliar cada percurso usa: largura e profundidade?</summary><div class="dentro"><p>Largura: fila. Profundidade: pilha, explícita ou a da recursão.</p></div></details>
+  <details class="gab"><summary>Na representação filho/irmão, como saber se um nó é folha?</summary><div class="dentro"><p><code>filho == NULL</code>. O ponteiro <code>irmao</code> não diz nada sobre ser folha.</p></div></details>
+  <details class="gab"><summary>Um grafo não direcionado tem 7 arestas. Quanto vale a soma dos graus?</summary><div class="dentro"><p>14. Cada aresta soma 1 ao grau de cada uma de suas duas pontas.</p></div></details>
+  <details class="gab"><summary>Grafo com 1000 vértices e 2000 arestas: matriz ou listas?</summary><div class="dentro"><p>Listas. A matriz teria 1.000.000 de posições para guardar 2000 arestas; as listas usam espaço proporcional a |<i>V</i>| + |<i>E</i>|.</p></div></details>
+  <details class="gab"><summary>O que acontece se <code>insere</code> for chamada como <code>insere(raiz, x);</code> com a árvore vazia?</summary><div class="dentro"><p>O nó é criado e devolvido, mas ninguém guarda o retorno: <code>raiz</code> continua <code>NULL</code> e o nó vaza. O certo é <code>raiz = insere(raiz, x);</code>.</p></div></details>
+
+  <h3>Checklist antes de submeter ao juiz</h3>
+  <ul>
+    <li>Nenhuma variável declarada fora de função (<code>#define</code> e <code>typedef</code> podem).</li>
+    <li>Nenhum <code>printf</code> além do que o enunciado pede; confira espaços finais e <code>\n</code>.</li>
+    <li>Cada <code>malloc</code> ou <code>calloc</code> tem seu <code>free</code> em todos os caminhos de saída.</li>
+    <li>Estruturas auxiliares (fila, pilha, vetor <code>visitado</code>) também foram liberadas.</li>
+    <li>Testou: entrada vazia, um único elemento, remoção da raiz, chave inexistente.</li>
+    <li><code>main</code> termina com <code>return 0;</code>.</li>
+  </ul>
+</section>
+
+</div></main>
+<a class="btn topo" href="#inicio" aria-label="Voltar ao topo">↑ Topo</a>
+<script>
+(function () {
+  "use strict";
+  var raiz = document.documentElement;
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+
+  /* ---------- realce de sintaxe C ---------- */
+  var KW = "if else for while do return break continue switch case default sizeof typedef struct".split(" ");
+  var TIPOS = "int void char const long double float unsigned short No Cel Fila NoGen Aresta Grafo".split(" ");
+  var RE = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*)|("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*')|(^[ \t]*#[ \t]*\w+)|(\b\d+\b)|([A-Za-z_]\w*)/gm;
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function realca(txt) {
+    var out = "", ult = 0, m;
+    RE.lastIndex = 0;
+    while ((m = RE.exec(txt)) !== null) {
+      out += esc(txt.slice(ult, m.index));
+      var t = m[0], cls = "";
+      if (m[1]) cls = "com";
+      else if (m[2]) cls = "str";
+      else if (m[3]) cls = "pre";
+      else if (m[4]) cls = "numr";
+      else if (KW.indexOf(t) >= 0) cls = "kw";
+      else if (TIPOS.indexOf(t) >= 0) cls = "tipo";
+      else if (t === "NULL") cls = "numr";
+      else if (/^\s*\(/.test(txt.slice(RE.lastIndex, RE.lastIndex + 4))) cls = "fn";
+      out += cls ? '<span class="' + cls + '">' + esc(t) + "</span>" : esc(t);
+      ult = RE.lastIndex;
+    }
+    return out + esc(txt.slice(ult));
+  }
+  $$(".bloco").forEach(function (b) {
+    var pre = $("pre", b), fonte = pre.textContent;
+    pre.innerHTML = realca(fonte);
+    var topo = document.createElement("div");
+    topo.className = "bloco-topo";
+    var rot = document.createElement("span");
+    rot.textContent = b.getAttribute("data-t") || "C";
+    var bt = document.createElement("button");
+    bt.type = "button"; bt.textContent = "Copiar";
+    bt.addEventListener("click", function () {
+      var fim = function (ok) { bt.textContent = ok ? "Copiado" : "Selecione e copie"; setTimeout(function () { bt.textContent = "Copiar"; }, 1600); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(fonte).then(function () { fim(true); }, function () { fim(false); });
+      } else { fim(false); }
+    });
+    topo.appendChild(rot); topo.appendChild(bt);
+    b.insertBefore(topo, pre);
+    pre.setAttribute("tabindex", "0");
+  });
+  $$("pre.ascii").forEach(function (p) { p.setAttribute("tabindex", "0"); });
+
+  /* ---------- tema ---------- */
+  var btTema = $("#btTema");
+  function aplicaTema(t) {
+    raiz.setAttribute("data-theme", t);
+    btTema.textContent = t === "dark" ? "Tema claro" : "Tema escuro";
+  }
+  function trocaTema() { aplicaTema(raiz.getAttribute("data-theme") === "dark" ? "light" : "dark"); }
+  btTema.addEventListener("click", trocaTema);
+
+  /* ---------- gabaritos ---------- */
+  var btGab = $("#btGab"), abertos = false;
+  function trocaGab() {
+    abertos = !abertos;
+    $$("details.gab").forEach(function (d) { d.open = abertos; });
+    btGab.textContent = abertos ? "Fechar gabaritos" : "Abrir gabaritos";
+  }
+  btGab.addEventListener("click", trocaGab);
+  $("#btImp").addEventListener("click", function () { window.print(); });
+
+  /* ---------- menu no celular ---------- */
+  var abre = $("#abreMenu");
+  function menu(aberto) {
+    document.body.classList.toggle("menu-aberto", aberto);
+    abre.setAttribute("aria-expanded", aberto ? "true" : "false");
+    abre.textContent = aberto ? "Fechar" : "Índice";
+  }
+  abre.addEventListener("click", function () { menu(!document.body.classList.contains("menu-aberto")); });
+  $("#lateral").addEventListener("click", function (e) { if (e.target.closest("a")) menu(false); });
+
+  /* ---------- destaque do módulo visível ---------- */
+  var links = $$("#indice a"), secoes = $$("section.mod");
+  function marca() {
+    var y = window.scrollY + window.innerHeight * 0.3, atual = -1;
+    secoes.forEach(function (s, i) { if (s.offsetTop <= y) atual = i; });
+    links.forEach(function (a, i) {
+      a.classList.toggle("ativo", i === atual);
+      if (i === atual) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+    });
+  }
+  window.addEventListener("scroll", marca, { passive: true });
+  marca();
+
+  /* ---------- atalhos de teclado ---------- */
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var alvo = e.target.tagName;
+    if (alvo === "INPUT" || alvo === "TEXTAREA" || alvo === "SELECT") return;
+    if (e.key >= "0" && e.key <= "7") { var s = document.getElementById("m" + e.key); if (s) s.scrollIntoView(); }
+    else if (e.key === "t" || e.key === "T") trocaTema();
+    else if (e.key === "g" || e.key === "G") trocaGab();
+    else if (e.key === "Escape") menu(false);
+  });
+
+  /* ---------- tocador de percursos ---------- */
+  var T = { v: 50, e: { v: 30, e: { v: 20 }, d: { v: 40 } }, d: { v: 70, e: { v: 60 }, d: { v: 80 } } };
+  function percorre(tipo) {
+    var o = [];
+    (function vai(n) {
+      if (!n) return;
+      if (tipo === "pre") o.push(n.v);
+      vai(n.e);
+      if (tipo === "em") o.push(n.v);
+      vai(n.d);
+      if (tipo === "pos") o.push(n.v);
+    })(tipo === "nivel" ? null : T);
+    if (tipo === "nivel") { var f = [T]; while (f.length) { var n = f.shift(); o.push(n.v); if (n.e) f.push(n.e); if (n.d) f.push(n.d); } }
+    return o;
+  }
+  var nomes = { pre: "Pré-ordem", em: "Em ordem", pos: "Pós-ordem", nivel: "Em nível" };
+  var saida = $("#saidaTocador"), relogioPerc = null;
+  var semMov = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  $$("[data-perc]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      clearInterval(relogioPerc);
+      var tipo = b.getAttribute("data-perc"), ordem = percorre(tipo), i = 0;
+      $$("#arvoreDemo .no").forEach(function (g) { g.classList.remove("visitado"); });
+      function passo() {
+        if (i >= ordem.length) { clearInterval(relogioPerc); return; }
+        var g = $('#arvoreDemo .no[data-v="' + ordem[i] + '"]');
+        if (g) g.classList.add("visitado");
+        i++;
+        saida.textContent = nomes[tipo] + ":  " + ordem.slice(0, i).join("  ");
+      }
+      if (semMov) { while (i < ordem.length) passo(); }
+      else { passo(); relogioPerc = setInterval(passo, 650); }
+    });
+  });
+
+  /* ---------- cronômetro da prova ---------- */
+  var TOTAL = 110 * 60, resta = TOTAL, tique = null, fimEm = 0;
+  var tempo = $("#tempo"), btIni = $("#btInicia"), caixa = $("#relogio");
+  function mostra() {
+    var h = Math.floor(resta / 3600), m = Math.floor(resta % 3600 / 60), s = resta % 60;
+    tempo.textContent = h + ":" + (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+    caixa.classList.toggle("acabou", resta === 0);
+  }
+  function para() { clearInterval(tique); tique = null; btIni.textContent = resta === TOTAL ? "Iniciar prova" : "Continuar"; }
+  btIni.addEventListener("click", function () {
+    if (tique) { para(); return; }
+    if (resta === 0) resta = TOTAL;
+    fimEm = Date.now() + resta * 1000;
+    btIni.textContent = "Pausar";
+    tique = setInterval(function () {
+      resta = Math.max(0, Math.round((fimEm - Date.now()) / 1000));
+      mostra();
+      if (resta === 0) { clearInterval(tique); tique = null; btIni.textContent = "Tempo esgotado. Reiniciar"; }
+    }, 500);
+  });
+  $("#btZera").addEventListener("click", function () { clearInterval(tique); tique = null; resta = TOTAL; mostra(); btIni.textContent = "Iniciar prova"; });
+  mostra();
+})();
+</script>
+</body>
+</html>

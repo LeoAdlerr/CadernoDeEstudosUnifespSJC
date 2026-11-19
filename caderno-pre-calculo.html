@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caderno Interativo de Pré-Cálculo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- MathJax 3 (saída SVG, sem fontes externas). Carrega do jsDelivr e, se falhar, do cdnjs. -->
+<script>
+window.MathJax = {
+  tex: { macros: { sen: '\\operatorname{sen}', tg: '\\operatorname{tg}', cossec: '\\operatorname{cossec}', cotg: '\\operatorname{cotg}', R: '\\mathbb{R}' } },
+  svg: { fontCache: 'local' },
+  startup: {
+    typeset: false,
+    ready: function () { MathJax.startup.defaultReady(); document.dispatchEvent(new Event('mj-ready')); }
+  }
+};
+(function () {
+  var fontes = [
+    'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js'
+  ], i = 0;
+  (function carregar() {
+    if (i >= fontes.length) { document.documentElement.classList.add('sem-mathjax'); return; }
+    var s = document.createElement('script');
+    s.src = fontes[i++]; s.async = true; s.onerror = carregar;
+    document.head.appendChild(s);
+  })();
+})();
+</script>
+
+<style>
+/* ===== Tokens: caderno (claro) e quadro-negro (escuro) ===== */
+:root{
+  --bg:#eef2f6; --surface:#ffffff; --surface2:#f5f7fb; --ink:#16213a; --muted:#56617a; --line:#d5dde8;
+  --accent:#1d3fa3; --accent-ink:#ffffff; --accent-soft:#e6ecfa;
+  --hl:#ffe45c; --hl-soft:#fff8d6;
+  --ok:#16794a; --ok-soft:#e2f4ea; --bad:#b9302a; --bad-soft:#fbe6e4; --mid:#8a5a00; --mid-soft:#fdf1d3;
+  --grid:rgba(29,63,163,.09); --margin:#e58f8a;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#101915; --surface:#17231e; --surface2:#1d2b25; --ink:#eceee6; --muted:#a2b0a8; --line:#2d3e36;
+    --accent:#9dc1ff; --accent-ink:#0d1a2e; --accent-soft:#1c2c3d;
+    --hl:#f2d974; --hl-soft:#2b2a17;
+    --ok:#6fd49c; --ok-soft:#173326; --bad:#ff8d82; --bad-soft:#3a1f1c; --mid:#f2c56b; --mid-soft:#33290f;
+    --grid:rgba(236,238,230,.055); --margin:#7a4744;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101915; --surface:#17231e; --surface2:#1d2b25; --ink:#eceee6; --muted:#a2b0a8; --line:#2d3e36;
+  --accent:#9dc1ff; --accent-ink:#0d1a2e; --accent-soft:#1c2c3d;
+  --hl:#f2d974; --hl-soft:#2b2a17;
+  --ok:#6fd49c; --ok-soft:#173326; --bad:#ff8d82; --bad-soft:#3a1f1c; --mid:#f2c56b; --mid-soft:#33290f;
+  --grid:rgba(236,238,230,.055); --margin:#7a4744;
+  color-scheme:dark;
+}
+
+/* ===== Base ===== */
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:16px/1.65 var(--sans);background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+h1,h2,h3,h4{line-height:1.2;letter-spacing:-.015em;margin:0}
+p{margin:.7em 0}
+ul,ol{padding-left:1.3em;margin:.6em 0}
+li{margin:.35em 0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.muted{color:var(--muted)}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;max-width:100%;margin:.7em 0!important;padding:2px 0}
+.sem-mathjax .aviso-mj{display:block}
+.aviso-mj{display:none;background:var(--bad-soft);color:var(--bad);border:1px solid var(--bad);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:14px}
+
+/* ===== Estrutura ===== */
+.app{display:grid;grid-template-columns:296px minmax(0,1fr);height:100%}
+.side{background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto;min-height:0}
+.brand{padding:20px 20px 14px;border-bottom:1px solid var(--line)}
+.brand b{display:block;font-size:19px;font-weight:800;letter-spacing:-.02em}
+.brand span{font-size:13px;color:var(--muted)}
+nav{padding:10px 10px 16px;flex:1}
+.nav-g{font-size:12.5px;font-weight:600;color:var(--muted);padding:14px 10px 6px}
+.nav-i{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:0;border-radius:9px;padding:8px 10px;cursor:pointer;font-size:14px;line-height:1.3}
+.nav-i:hover{background:var(--surface2)}
+.nav-i.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav-n{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);display:grid;place-items:center;font-size:12.5px;font-weight:700;background:var(--surface)}
+.nav-i.on .nav-n{border-color:var(--accent)}
+.nav-s{font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:99px;font-variant-numeric:tabular-nums}
+.nav-s.ok{background:var(--ok-soft);color:var(--ok)}
+.nav-s.bad{background:var(--bad-soft);color:var(--bad)}
+.side-foot{padding:12px 16px 16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+
+main{overflow-y:auto;min-width:0;min-height:0}
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:10px 20px;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-title{font-weight:600;font-size:14.5px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gprog{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.bar{display:block;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .35s}
+.gprog .bar{width:110px}
+.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:grid;place-items:center;font-size:17px;flex:none}
+#menuBtn{display:none}
+.scrim{display:none}
+.page{max-width:860px;margin:0 auto;padding:24px 20px 96px}
+
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;inset:0 auto 0 0;width:min(86vw,320px);z-index:30;transform:translateX(-103%);transition:transform .22s}
+  .side.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}
+  .scrim.open{display:block;position:fixed;inset:0;z-index:25}
+  #menuBtn{display:grid}
+  .gprog .bar{width:64px}
+  .page{padding:16px 14px 80px}
+  .top{padding:8px 14px}
+}
+
+/* ===== Cabeçalho de módulo: folha quadriculada com margem ===== */
+.mhead{position:relative;padding:26px 24px 22px 44px;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  background:linear-gradient(var(--grid) 1px,transparent 1px) 0 0/100% 22px,linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/22px 100%,var(--surface)}
+.mhead::before{content:"";position:absolute;left:26px;top:0;bottom:0;width:2px;background:var(--margin)}
+.mhead .mlabel{font-size:14px;font-weight:700;color:var(--accent)}
+.mhead h1{font-size:clamp(25px,4.6vw,36px);font-weight:800;letter-spacing:-.03em;margin:.25em 0 .3em;text-wrap:balance}
+.mhead p{margin:0;color:var(--muted);max-width:62ch}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 4px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 13px;font-size:13.5px;cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ===== Seções ===== */
+.sec{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 24px 24px;margin-top:18px;scroll-margin-top:70px}
+.sec>h2{display:flex;align-items:center;gap:12px;font-size:21px;font-weight:700;padding-bottom:14px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.sec>h2 .num{flex:none;width:32px;height:32px;border-radius:8px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:15px}
+.sec h3{font-size:17.5px;font-weight:700;margin:1.5em 0 .3em}
+.sec h4{font-size:16px;font-weight:700}
+.lead{font-size:17px;color:var(--muted)}
+@media (max-width:600px){.sec{padding:18px 15px 20px}.mhead{padding:20px 16px 18px 34px}.mhead::before{left:18px}}
+
+.fx{background:var(--hl-soft);border-left:5px solid var(--hl);border-radius:4px 10px 10px 4px;padding:6px 16px;margin:.9em 0;overflow-x:auto}
+.warn,.bridge{border-radius:10px;padding:12px 16px;margin:1.1em 0;border:1px solid}
+.warn{background:var(--bad-soft);border-color:transparent}
+.warn>b{color:var(--bad)}
+.bridge{background:var(--accent-soft);border-color:transparent}
+.bridge>b{color:var(--accent);display:block;margin-bottom:2px}
+.scroll-x{overflow-x:auto;margin:1em 0}
+table{border-collapse:collapse;font-size:15px;min-width:100%}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:center}
+thead th{background:var(--surface2);font-weight:600}
+tbody th{background:var(--surface2);font-weight:600;white-space:nowrap}
+td.l{text-align:left}
+.varal td{font-weight:700;font-size:17px}
+.varal td.p{color:var(--ok);background:var(--ok-soft)}
+.varal td.n{color:var(--bad);background:var(--bad-soft)}
+figure{margin:1.2em 0;text-align:center}
+figure svg{max-width:100%;height:auto}
+.figs{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin:1.2em 0}
+.figs figure{margin:0}
+.br td{font-variant-numeric:tabular-nums;min-width:52px}
+.br td:first-child{font-weight:700;border-right:2px solid var(--ink)}
+figcaption{font-size:13.5px;color:var(--muted);margin-top:4px}
+
+/* ===== Resolvidas e fixação ===== */
+.sec[data-s="r"]{counter-reset:prob}
+.prob{counter-increment:prob;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-top:16px;background:var(--surface2)}
+.prob>h4::before{content:"Problema " counter(prob) ". ";color:var(--accent)}
+.way{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:12px}
+.way-tag{display:inline-block;font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:2px 9px;margin-bottom:2px}
+.note{font-size:15px;color:var(--muted);border-left:3px solid var(--line);padding-left:12px;margin:14px 0 2px}
+.sec[data-s="f"]{counter-reset:ex}
+.ex{counter-increment:ex;border-top:1px dashed var(--line);padding:14px 0 12px}
+.ex:first-of-type{border-top:0}
+.ex>p:first-child::before{content:"Exercício " counter(ex) ". ";font-weight:700;color:var(--accent)}
+.sol{margin-top:10px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:8px 16px}
+.sol.closed{visibility:hidden;height:0;overflow:hidden;margin:0;padding:0;border:0}
+
+/* ===== Botões ===== */
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:9px;border:1px solid var(--line);background:var(--surface);padding:9px 16px;font-weight:600;font-size:14.5px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.sm{padding:6px 12px;font-size:13.5px}
+.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+
+/* ===== Questões ===== */
+.q-text{font-weight:500;margin:.2em 0 .7em}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:11px;align-items:center;width:100%;text-align:left;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;position:relative}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt:hover{border-color:var(--accent)}
+.opt:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.ltr{flex:none;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12.5px;font-weight:700}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.sel .ltr{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.opt.locked{cursor:default}
+.opt.locked:hover{border-color:var(--line)}
+.opt.ok,.opt.ok:hover{border-color:var(--ok);background:var(--ok-soft)}
+.opt.ok .ltr{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.opt.bad,.opt.bad:hover{border-color:var(--bad);background:var(--bad-soft)}
+.opt.bad .ltr{background:var(--bad);border-color:var(--bad);color:var(--surface)}
+.opt.ok::after,.opt.bad::after{margin-left:auto;font-weight:800;padding-left:8px}
+.opt.ok::after{content:"✓";color:var(--ok)}
+.opt.bad::after{content:"✗";color:var(--bad)}
+.qlist{list-style:none;padding:0;margin:0;counter-reset:q}
+.qitem{counter-increment:q;padding:18px 0;border-top:1px solid var(--line)}
+.qitem:first-child{border-top:0}
+.qitem .q-text::before{content:counter(q) ". ";font-weight:700;color:var(--accent)}
+.expl{margin-top:10px;padding:10px 14px;border-radius:10px;font-size:15px;border-left:4px solid}
+.is-ok .expl,.expl.ok{background:var(--ok-soft);border-color:var(--ok)}
+.is-bad .expl,.expl.bad{background:var(--bad-soft);border-color:var(--bad)}
+.is-ok .expl>b,.expl.ok>b{color:var(--ok)}
+.is-bad .expl>b,.expl.bad>b{color:var(--bad)}
+.mtag{display:inline-block;font-size:12px;font-weight:700;border:1px solid currentColor;border-radius:99px;padding:0 8px;margin-left:6px;opacity:.8;white-space:nowrap}
+.warnline{color:var(--mid);background:var(--mid-soft);border-radius:8px;padding:8px 12px;font-size:14.5px}
+
+/* Flash-quiz */
+.fq-head{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;color:var(--muted)}
+.fq-clock{font-variant-numeric:tabular-nums;color:var(--ink)}
+.fq-bar{height:6px;border-radius:99px;background:var(--line);margin:8px 0 16px;overflow:hidden}
+.fq-bar i{display:block;height:100%;width:100%;background:var(--accent);transition:width .2s linear}
+.fq-bar i.low{background:var(--bad)}
+.chk{display:flex;align-items:center;gap:8px;font-size:14.5px;margin:10px 0;cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--accent)}
+
+/* Resultado */
+.result{border-radius:12px;padding:16px 18px;margin:6px 0 10px;border:1px solid;scroll-margin-top:70px}
+.result.ok{background:var(--ok-soft);border-color:var(--ok)}
+.result.mid{background:var(--mid-soft);border-color:var(--mid)}
+.result.bad{background:var(--bad-soft);border-color:var(--bad)}
+.result .big{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1.1;font-variant-numeric:tabular-nums}
+.result h4{font-size:18px;margin-top:6px}
+.per{display:grid;gap:6px;margin-top:12px;font-size:14px}
+.per-row{display:grid;grid-template-columns:86px 1fr 40px;gap:10px;align-items:center}
+.per-row .bar{background:rgba(127,127,127,.25)}
+.per-row .bar i.w{background:var(--bad)}
+.per-row .bar i.s{background:var(--ok)}
+
+/* Painel inicial */
+.hero h1{font-size:clamp(30px,6vw,46px);font-weight:800;letter-spacing:-.035em;text-wrap:balance}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 0}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font-size:24px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+.h-sec{font-size:19px;font-weight:700;margin:30px 0 10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer}
+.card:hover{border-color:var(--accent)}
+.card-n{font-size:13px;font-weight:700;color:var(--accent)}
+.card-t{font-weight:700;line-height:1.3;flex:1}
+.card-m{font-size:13px;color:var(--muted)}
+.card .bar i.done{background:var(--ok)}
+.how{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 20px 10px;margin-top:12px}
+@media (max-width:520px){.stats{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side" aria-label="Navegação do caderno">
+    <div class="brand"><b>Caderno de Pré-Cálculo</b><span>Preparação para Cálculo I</span></div>
+    <nav id="nav"></nav>
+    <div class="side-foot" id="sideFoot"></div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <main id="main">
+    <header class="top">
+      <button class="icon-btn" id="menuBtn" aria-label="Abrir menu de módulos">☰</button>
+      <div class="top-title" id="topTitle"></div>
+      <div class="gprog" title="Módulos concluídos (avaliação modular com 60% ou mais)"><div class="bar"><i id="gbar"></i></div><span id="gtxt"></span></div>
+      <button class="icon-btn" id="themeBtn" aria-label="Alternar entre tema claro e escuro" title="Tema claro/escuro">◐</button>
+    </header>
+    <div class="page">
+      <div class="aviso-mj">Não foi possível carregar o MathJax, por isso as fórmulas aparecem em LaTeX bruto. Verifique a conexão com a internet e recarregue a página.</div>
+      <section class="view" id="v-inicio"></section>
+
+<!-- ======================= MÓDULO 0 (opcional) ======================= -->
+<section class="view" id="v-m0" hidden>
+<div class="sec" data-s="t">
+<div class="bridge"><b>Este módulo é opcional</b>Ele revisa a base do Ensino Fundamental. Se você já domina frações numéricas, regras de sinal e MMC, vá direto à avaliação modular no fim desta página: com 80% ou mais, pode pular o módulo sem prejuízo. Ele não conta para a barra de progresso dos nove módulos.</div>
+<p class="lead">Toda manipulação algébrica do Cálculo é uma aplicação de meia dúzia de regras sobre números reais. Quem as conhece pelo nome sabe sempre por que um passo é permitido, e por que outro não é.</p>
+<h3>Conjuntos numéricos</h3>
+<div class="fx">\[\mathbb{N}\subset\mathbb{Z}\subset\mathbb{Q}\subset\mathbb{R}\]</div>
+<ul>
+<li><b>Naturais</b> \(\mathbb{N}=\{0,1,2,3,\dots\}\): contagem.</li>
+<li><b>Inteiros</b> \(\mathbb{Z}=\{\dots,-2,-1,0,1,2,\dots\}\): os naturais e seus opostos.</li>
+<li><b>Racionais</b> \(\mathbb{Q}\): números da forma \(\dfrac pq\), com \(p,q\) inteiros e \(q\ne0\). Sua representação decimal é finita ou periódica: \(0{,}75=\frac34\) e \(0{,}333\ldots=\frac13\).</li>
+<li><b>Irracionais</b>: decimais infinitos e não periódicos, como \(\sqrt2\), \(\pi\) e \(e\). Não podem ser escritos como fração de inteiros.</li>
+<li><b>Reais</b> \(\R\): racionais e irracionais juntos. Preenchem a reta numérica sem deixar buracos, e é isso que permite falar em limite e continuidade.</li>
+</ul>
+<h3>Axiomas de corpo</h3>
+<p>As operações de adição e multiplicação em \(\R\) obedecem às propriedades abaixo. Toda a álgebra elementar decorre delas.</p>
+<div class="scroll-x"><table>
+<thead><tr><th>Propriedade</th><th>Adição</th><th>Multiplicação</th></tr></thead>
+<tbody>
+<tr><th>Comutativa</th><td>\(a+b=b+a\)</td><td>\(ab=ba\)</td></tr>
+<tr><th>Associativa</th><td>\((a+b)+c=a+(b+c)\)</td><td>\((ab)c=a(bc)\)</td></tr>
+<tr><th>Elemento neutro</th><td>\(a+0=a\)</td><td>\(a\cdot1=a\)</td></tr>
+<tr><th>Elemento inverso</th><td>\(a+(-a)=0\)</td><td>\(a\cdot\dfrac1a=1\), para \(a\ne0\)</td></tr>
+<tr><th>Distributiva</th><td colspan="2">\(a(b+c)=ab+ac\)</td></tr>
+</tbody></table></div>
+<p>Subtrair é somar o oposto, \(a-b=a+(-b)\), e dividir é multiplicar pelo inverso, \(\dfrac ab=a\cdot\dfrac1b\). Três consequências usadas o tempo todo:</p>
+<ul>
+<li>\(a\cdot0=0\) para todo \(a\).</li>
+<li><b>Lei do anulamento do produto:</b> se \(ab=0\), então \(a=0\) ou \(b=0\). É ela que justifica resolver equações por fatoração.</li>
+<li><b>Não existe divisão por zero:</b> \(\dfrac a0\) seria um número \(c\) com \(c\cdot0=a\); mas \(c\cdot0\) é sempre 0. Se \(a\ne0\), nenhum \(c\) serve; se \(a=0\), todos servem.</li>
+</ul>
+<h3>Regras de sinal</h3>
+<div class="fx">
+\[(-a)\,b=-(ab)\qquad (-a)(-b)=ab\qquad -(-a)=a\]
+\[-(a+b)=-a-b\qquad -(a-b)=b-a\]
+</div>
+<p>Um sinal de menos diante de parênteses multiplica <em>todas</em> as parcelas por \(-1\). Na ordem das operações, resolvem-se primeiro potências e raízes, depois multiplicações e divisões, por fim adições e subtrações; parênteses alteram essa ordem.</p>
+<h3>Regras de cancelamento</h3>
+<div class="fx">
+\[a+c=b+c\ \Rightarrow\ a=b\qquad\qquad ac=bc\ \text{ e }\ c\ne0\ \Rightarrow\ a=b\qquad\qquad \frac{ac}{bc}=\frac ab\quad(b,c\ne0)\]
+</div>
+<p>Cancelar é desfazer uma operação com a sua inversa: parcela com parcela oposta, fator com fator inverso. Em uma fração, só se cancela um <em>fator</em> do numerador inteiro com um <em>fator</em> do denominador inteiro.</p>
+<div class="warn"><b>Erros clássicos de cancelamento</b>
+<ul>
+<li>Cancelar parcelas: \(\dfrac{a+b}{a}\ne b\) e \(\dfrac{x^2+3}{x}\ne x+3\). O correto é separar a fração, \(\dfrac{a+b}{a}=1+\dfrac ba\), ou fatorar antes.</li>
+<li>Cancelar pela metade: \(\dfrac{2x+6}{2}\ne x+6\). O 2 precisa dividir as duas parcelas: \(x+3\).</li>
+<li>Dividir os dois lados de uma equação por uma expressão que pode ser zero: de \(x^2=3x\) não se conclui apenas \(x=3\). Dividir por \(x\) pressupõe \(x\ne0\) e faz perder a solução \(x=0\).</li>
+</ul></div>
+<h3>Fatores primos, MDC e MMC</h3>
+<p>Um número primo é um natural maior que 1 divisível apenas por 1 e por si mesmo. Pelo Teorema Fundamental da Aritmética, todo natural maior que 1 decompõe-se de modo único em fatores primos. Divide-se sucessivamente pelos primos em ordem crescente:</p>
+<div class="fx">\[360=2\cdot180=2^2\cdot90=2^3\cdot45=2^3\cdot3^2\cdot5\]</div>
+<ul>
+<li><b>MDC</b> (máximo divisor comum): produto dos fatores primos <em>comuns</em>, cada um com o <em>menor</em> expoente.</li>
+<li><b>MMC</b> (mínimo múltiplo comum): produto de <em>todos</em> os fatores primos que aparecem, cada um com o <em>maior</em> expoente.</li>
+<li>Para dois números, \(\operatorname{mdc}(a,b)\cdot\operatorname{mmc}(a,b)=a\cdot b\).</li>
+</ul>
+<p>O MDC serve para simplificar frações; o MMC, para somá-las com o menor denominador comum.</p>
+<h3>Do MMC numérico ao MMC algébrico</h3>
+<p>Em frações algébricas, os polinômios irredutíveis fazem o papel dos números primos, e a receita é idêntica: fatore cada denominador e tome todos os fatores com o maior expoente.</p>
+<div class="scroll-x"><table>
+<thead><tr><th></th><th>Numérico</th><th>Algébrico</th></tr></thead>
+<tbody>
+<tr><th>Denominadores</th><td>\(12\) e \(18\)</td><td>\(x^2-1\) e \(x^2+x\)</td></tr>
+<tr><th>Fatoração</th><td>\(2^2\cdot3\) e \(2\cdot3^2\)</td><td>\((x-1)(x+1)\) e \(x(x+1)\)</td></tr>
+<tr><th>MMC</th><td>\(2^2\cdot3^2=36\)</td><td>\(x(x-1)(x+1)\)</td></tr>
+</tbody></table></div>
+<div class="bridge"><b>Ponte para o Cálculo</b>Para achar pontos críticos resolve-se \(f'(x)=0\), quase sempre fatorando e aplicando a lei do anulamento do produto. A proibição de dividir por zero é a origem das indeterminações \(\frac00\) dos limites. E o MMC algébrico reaparece na integração por frações parciais.</div>
+</div>
+
+<div class="sec" data-s="r">
+<article class="prob"><h4>Calcule \(\dfrac{5}{12}+\dfrac{7}{18}\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: MMC por fatores primos</span>
+<p>\(12=2^2\cdot3\) e \(18=2\cdot3^2\), logo o MMC é \(2^2\cdot3^2=36\). Cada fração é multiplicada pelo fator que falta:</p>
+\[\frac{5\cdot3}{12\cdot3}+\frac{7\cdot2}{18\cdot2}=\frac{15}{36}+\frac{14}{36}=\frac{29}{36}\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: produto dos denominadores e simplificação pelo MDC</span>
+\[\frac{5\cdot18+7\cdot12}{12\cdot18}=\frac{174}{216}=\frac{174\div6}{216\div6}=\frac{29}{36}\]
+<p>O denominador \(216\) é múltiplo comum, mas não o menor; por isso sobra o fator \(6=\operatorname{mdc}(12,18)\) para simplificar.</p>
+</div>
+<p class="note">A abordagem B sempre funciona, mas com frações algébricas ela produz polinômios de grau desnecessariamente alto. Vale criar desde já o hábito do MMC.</p>
+</article>
+
+<article class="prob"><h4>Determine o MDC e o MMC de 84 e 120.</h4>
+<div class="way"><span class="way-tag">Abordagem A: decomposição em fatores primos</span>
+\[84=2^2\cdot3\cdot7\qquad 120=2^3\cdot3\cdot5\]
+<p>MDC: fatores comuns com o menor expoente, \(2^2\cdot3=12\). MMC: todos os fatores com o maior expoente, \(2^3\cdot3\cdot5\cdot7=840\).</p>
+</div>
+<div class="way"><span class="way-tag">Abordagem B: algoritmo de Euclides</span>
+<p>Divide-se o maior pelo menor e, em seguida, o divisor pelo resto, até o resto ser zero. O último divisor é o MDC:</p>
+\[120=84\cdot1+36\qquad 84=36\cdot2+12\qquad 36=12\cdot3+0\]
+<p>Logo \(\operatorname{mdc}=12\) e \(\operatorname{mmc}=\dfrac{84\cdot120}{12}=840\).</p>
+</div>
+<p class="note">O algoritmo de Euclides dispensa a fatoração e é mais rápido para números grandes. A mesma ideia de “dividir e ficar com o resto” volta na divisão de polinômios do Módulo 2.</p>
+</article>
+</div>
+
+<div class="sec" data-s="f">
+<div class="ex"><p>Indique o menor conjunto numérico (\(\mathbb{N}\), \(\mathbb{Z}\), \(\mathbb{Q}\) ou \(\R\)) a que pertence cada número: \(-3\); \(0{,}75\); \(\sqrt2\); \(0{,}333\ldots\); \(\sqrt{16}\); \(\pi\).</p>
+<div class="sol"><p>\(-3\in\mathbb{Z}\); \(0{,}75=\frac34\in\mathbb{Q}\); \(\sqrt2\in\R\) (irracional); \(0{,}333\ldots=\frac13\in\mathbb{Q}\); \(\sqrt{16}=4\in\mathbb{N}\); \(\pi\in\R\) (irracional). Repare que ter raiz na escrita não torna o número irracional.</p></div></div>
+<div class="ex"><p>Elimine os parênteses e reduza: \(-2(3-x)-(x-5)\cdot(-1)\).</p>
+<div class="sol">\[-6+2x+(x-5)=3x-11\]<p>No segundo termo há dois sinais de menos multiplicando \(x-5\): o resultado é \(+(x-5)\).</p></div></div>
+<div class="ex"><p>Decomponha 180 e 252 em fatores primos e determine o MDC e o MMC.</p>
+<div class="sol">\[180=2^2\cdot3^2\cdot5\qquad 252=2^2\cdot3^2\cdot7\]<p>MDC \(=2^2\cdot3^2=36\). MMC \(=2^2\cdot3^2\cdot5\cdot7=1260\). Conferência: \(36\cdot1260=180\cdot252=45\,360\).</p></div></div>
+<div class="ex"><p>Efetue \(\dfrac{1}{x^2-1}+\dfrac{1}{x^2+x}\) usando o MMC dos denominadores.</p>
+<div class="sol"><p>Denominadores fatorados: \((x-1)(x+1)\) e \(x(x+1)\). MMC: \(x(x-1)(x+1)\). À primeira fração falta o fator \(x\); à segunda, \(x-1\):</p>\[\frac{x+(x-1)}{x(x-1)(x+1)}=\frac{2x-1}{x(x-1)(x+1)}\]<p>Válido para \(x\ne0\) e \(x\ne\pm1\).</p></div></div>
+<div class="ex"><p>Encontre o erro: “De \(x^2=3x\), dividindo os dois lados por \(x\), obtém-se \(x=3\); logo a única solução é 3.”</p>
+<div class="sol"><p>Dividir por \(x\) só é permitido se \(x\ne0\), e \(x=0\) é justamente uma solução (\(0^2=3\cdot0\)). O caminho seguro é não dividir:</p>\[x^2-3x=0\ \Rightarrow\ x(x-3)=0\ \Rightarrow\ x=0\ \text{ou}\ x=3\]</div></div>
+</div>
+</section>
+
+<!-- ======================= MÓDULO 1 ======================= -->
+<section class="view" id="v-m1" hidden>
+<div class="sec" data-s="t">
+<p class="lead">Quase todo erro em Cálculo I é, na verdade, um erro de álgebra básica. Este módulo consolida as regras que você usará em toda derivada e em toda integral: reescrever raízes e frações como potências e manipular frações algébricas sem tropeçar.</p>
+<p class="note">Se frações numéricas, regras de sinal ou MMC ainda geram dúvida, passe antes pelo Módulo 0, um nivelamento opcional. <button class="btn sm" data-go="m0">Abrir o Módulo 0</button></p>
+<h3>Potências: as cinco leis</h3>
+<p>Para bases \(a, b \ne 0\) e expoentes reais \(m, n\):</p>
+<div class="fx">
+\[a^m\cdot a^n=a^{m+n}\qquad \frac{a^m}{a^n}=a^{m-n}\qquad (a^m)^n=a^{mn}\]
+\[(ab)^n=a^n\,b^n\qquad \left(\frac{a}{b}\right)^{n}=\frac{a^n}{b^n}\]
+</div>
+<p>Dessas leis decorrem as três convenções que estendem a potenciação para além dos expoentes naturais:</p>
+<div class="fx">\[a^0=1\qquad a^{-n}=\frac{1}{a^n}\qquad a^{m/n}=\sqrt[n]{a^m}=\left(\sqrt[n]{a}\right)^m\]</div>
+<p><b>Intuição.</b> Nenhuma delas é arbitrária. \(a^0=1\) porque \(\frac{a^n}{a^n}=a^{n-n}=a^0\) e a fração vale 1. E \(a^{1/2}\) tem de ser a raiz quadrada porque \(a^{1/2}\cdot a^{1/2}=a^{1}\).</p>
+
+<h3>Radiciação</h3>
+<p>Para \(a,b\ge 0\): \(\sqrt[n]{ab}=\sqrt[n]{a}\,\sqrt[n]{b}\) e \(\sqrt[n]{a/b}=\sqrt[n]{a}\,/\sqrt[n]{b}\) (com \(b\ne0\)). A raiz distribui-se sobre produtos e quocientes, <em>nunca</em> sobre somas. E, para qualquer real \(x\):</p>
+<div class="fx">\[\sqrt{x^2}=|x|\]</div>
+<p>O símbolo \(\sqrt{\phantom{x}}\) denota sempre a raiz <em>não negativa</em>. Exemplo: \(\sqrt{(-3)^2}=\sqrt{9}=3=|-3|\), e não \(-3\).</p>
+
+<h3>Frações numéricas e algébricas</h3>
+<ul>
+<li><b>Somar:</b> reduza ao mesmo denominador, \(\dfrac{a}{b}+\dfrac{c}{d}=\dfrac{ad+bc}{bd}\).</li>
+<li><b>Dividir:</b> multiplique pelo inverso, \(\dfrac{a}{b}\div\dfrac{c}{d}=\dfrac{a}{b}\cdot\dfrac{d}{c}\).</li>
+<li><b>Simplificar:</b> só se cancelam <em>fatores</em> comuns ao numerador inteiro e ao denominador inteiro. Antes de cancelar, fatore.</li>
+<li><b>Condição de existência:</b> registre os valores que anulam o denominador <em>antes</em> de simplificar; eles continuam proibidos depois.</li>
+</ul>
+<div class="warn"><b>Erros clássicos</b>
+<ul>
+<li>\(-3^2=-9\), mas \((-3)^2=9\): a potência é calculada antes do sinal.</li>
+<li>\((a+b)^2\ne a^2+b^2\) e \(\sqrt{a^2+b^2}\ne a+b\).</li>
+<li>\(\dfrac{x+5}{x}\ne 5\): o \(x\) do numerador é parcela, não fator.</li>
+<li>\(\dfrac{1}{a+b}\ne\dfrac1a+\dfrac1b\).</li>
+</ul></div>
+<div class="bridge"><b>Ponte para o Cálculo</b>A regra da potência, \(\dfrac{d}{dx}x^n=n\,x^{n-1}\), só se aplica a potências. Por isso, antes de derivar ou integrar, reescreve-se \(\dfrac{1}{x^3}=x^{-3}\) e \(\sqrt[3]{x^2}=x^{2/3}\).</div>
+</div>
+
+<div class="sec" data-s="r">
+<article class="prob"><h4>Simplifique \(\dfrac{(2x^3y^{-2})^3}{4x^{-1}y^{2}}\), com \(x,y\ne0\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: leis das potências, direto</span>
+<p>Distribua o cubo no numerador e depois subtraia expoentes de mesma base:</p>
+\[\frac{2^3x^{9}y^{-6}}{4x^{-1}y^{2}}=\frac{8}{4}\,x^{9-(-1)}\,y^{-6-2}=2x^{10}y^{-8}=\frac{2x^{10}}{y^{8}}\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: eliminar expoentes negativos primeiro</span>
+<p>Reescreva tudo como frações comuns: \(2x^3y^{-2}=\dfrac{2x^3}{y^2}\) e \(4x^{-1}y^2=\dfrac{4y^2}{x}\). Então</p>
+\[\left(\frac{2x^3}{y^2}\right)^{3}\div\frac{4y^2}{x}=\frac{8x^9}{y^6}\cdot\frac{x}{4y^2}=\frac{2x^{10}}{y^{8}}\]
+</div>
+<p class="note">A abordagem A é mais rápida; a B é mais segura para quem ainda erra sinais de expoentes. Escolha uma e confira com a outra.</p>
+</article>
+
+<article class="prob"><h4>Efetue e simplifique \(\dfrac{1}{x-1}-\dfrac{2}{x^2-1}\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: denominador comum</span>
+<p>Condição de existência: \(x\ne1\) e \(x\ne-1\). Como \(x^2-1=(x-1)(x+1)\), o denominador comum é \((x-1)(x+1)\):</p>
+\[\frac{(x+1)-2}{(x-1)(x+1)}=\frac{x-1}{(x-1)(x+1)}=\frac{1}{x+1}\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: decompor a segunda fração</span>
+<p>Observe que \(\dfrac{1}{x-1}-\dfrac{1}{x+1}=\dfrac{(x+1)-(x-1)}{x^2-1}=\dfrac{2}{x^2-1}\). Substituindo:</p>
+\[\frac{1}{x-1}-\left(\frac{1}{x-1}-\frac{1}{x+1}\right)=\frac{1}{x+1}\]
+</div>
+<p class="note">O resultado \(\frac{1}{x+1}\) vale apenas para \(x\ne\pm1\). A decomposição da abordagem B é a técnica de frações parciais, que você reencontrará em integrais.</p>
+</article>
+</div>
+
+<div class="sec" data-s="f">
+<div class="ex"><p>Calcule \(27^{-2/3}\).</p>
+<div class="sol"><p>O denominador 3 do expoente indica raiz cúbica; o sinal negativo, inverso:</p>\[27^{-2/3}=\frac{1}{\left(\sqrt[3]{27}\right)^2}=\frac{1}{3^2}=\frac19\]<p>Tire a raiz antes de elevar: os números ficam menores.</p></div></div>
+<div class="ex"><p>Escreva \(\dfrac{\sqrt[3]{x^2}}{x\sqrt{x}}\) como uma única potência de \(x\) (\(x\gt0\)).</p>
+<div class="sol">\[\frac{x^{2/3}}{x^{1}\cdot x^{1/2}}=x^{\frac23-\frac32}=x^{-5/6}\]<p>É nessa forma que a expressão fica pronta para a regra da potência.</p></div></div>
+<div class="ex"><p>Simplifique \(\dfrac{x^2-9}{x^2+3x}\), indicando a condição de existência.</p>
+<div class="sol"><p>Fatore antes de cancelar. Condição: \(x\ne0\) e \(x\ne-3\).</p>\[\frac{(x-3)(x+3)}{x(x+3)}=\frac{x-3}{x}\]</div></div>
+<div class="ex"><p>Simplifique \(\sqrt{50}+\sqrt{18}-\sqrt{8}\).</p>
+<div class="sol"><p>Extraia os quadrados perfeitos de cada radicando:</p>\[5\sqrt2+3\sqrt2-2\sqrt2=6\sqrt2\]</div></div>
+<div class="ex"><p>Simplifique a fração composta \(\dfrac{\dfrac1x-\dfrac1a}{x-a}\), com \(x\ne a\) e \(x,a\ne0\).</p>
+<div class="sol"><p>Some as frações do numerador e depois divida:</p>\[\frac{\dfrac{a-x}{ax}}{x-a}=\frac{a-x}{ax}\cdot\frac{1}{x-a}=-\frac{1}{ax}\]<p>Usamos \(a-x=-(x-a)\). Esta é exatamente a conta que aparece ao derivar \(1/x\) pela definição.</p></div></div>
+</div>
+</section>
+
+<!-- ======================= MÓDULO 2 ======================= -->
+<section class="view" id="v-m2" hidden>
+<div class="sec" data-s="t">
+<p class="lead">Fatorar é desfazer uma multiplicação. Em Cálculo, é a ferramenta que remove indeterminações do tipo \(\frac00\) em limites: você fatora, cancela o fator problemático e só então substitui.</p>
+<h3>Produtos notáveis</h3>
+<div class="fx">
+\[(a\pm b)^2=a^2\pm2ab+b^2\qquad (a+b)(a-b)=a^2-b^2\]
+\[(a\pm b)^3=a^3\pm3a^2b+3ab^2\pm b^3\]
+\[a^3-b^3=(a-b)(a^2+ab+b^2)\qquad a^3+b^3=(a+b)(a^2-ab+b^2)\]
+</div>
+<p><b>Intuição geométrica.</b> \((a+b)^2\) é a área de um quadrado de lado \(a+b\): dois quadrados (\(a^2\) e \(b^2\)) mais dois retângulos \(ab\). O termo \(2ab\) são esses retângulos, que o erro \((a+b)^2=a^2+b^2\) esquece.</p>
+<h3>Roteiro de fatoração</h3>
+<ol>
+<li><b>Fator comum:</b> \(6x^3-9x^2=3x^2(2x-3)\). Sempre o primeiro passo.</li>
+<li><b>Agrupamento</b> (quatro termos): \(ax+ay+bx+by=(a+b)(x+y)\).</li>
+<li><b>Diferença de quadrados</b> e <b>trinômio quadrado perfeito</b>: leia os produtos notáveis da direita para a esquerda.</li>
+<li><b>Soma e produto:</b> \(x^2+Sx+P=(x+p)(x+q)\) com \(p+q=S\) e \(pq=P\).</li>
+<li><b>Pelas raízes:</b> \(ax^2+bx+c=a(x-r_1)(x-r_2)\).</li>
+</ol>
+<p>Atenção: \(a^2+b^2\) <em>não</em> se fatora em fatores reais do 1º grau.</p>
+<h3>Divisão de polinômios: o método da chave</h3>
+<p>Dividir \(P(x)\) por \(D(x)\ne0\) é encontrar o quociente \(Q(x)\) e o resto \(R(x)\) tais que</p>
+<div class="fx">\[P(x)=D(x)\,Q(x)+R(x),\qquad \text{com } R=0\ \text{ou}\ \operatorname{grau}R\lt\operatorname{grau}D\]</div>
+<p>O algoritmo é o mesmo da divisão de números inteiros com a chave: divide-se o termo de maior grau do dividendo pelo termo de maior grau do divisor, multiplica-se o resultado pelo divisor, subtrai-se e repete-se com o que sobrou.</p>
+<p><b>Exemplo.</b> Dividir \(2x^3+x^2-4x+5\) por \(x^2+x-2\):</p>
+<ol>
+<li>\(2x^3\div x^2=2x\). Multiplique: \(2x(x^2+x-2)=2x^3+2x^2-4x\). Subtraia do dividendo: sobra \(-x^2+5\).</li>
+<li>\(-x^2\div x^2=-1\). Multiplique: \(-1(x^2+x-2)=-x^2-x+2\). Subtraia: \((-x^2+5)-(-x^2-x+2)=x+3\).</li>
+<li>O que sobrou, \(x+3\), tem grau 1, menor que o grau 2 do divisor: a divisão termina.</li>
+</ol>
+<div class="fx">\[Q(x)=2x-1,\quad R(x)=x+3\qquad\Longrightarrow\qquad \frac{2x^3+x^2-4x+5}{x^2+x-2}=2x-1+\frac{x+3}{x^2+x-2}\]</div>
+<h3>Teorema do resto e dispositivo de Briot-Ruffini</h3>
+<p>Quando o divisor é \(x-a\), o resto é uma constante \(r\). Fazendo \(x=a\) em \(P(x)=(x-a)Q(x)+r\), obtém-se:</p>
+<div class="fx">\[\text{Teorema do resto: } r=P(a)\qquad\qquad \text{Teorema de D'Alembert: } (x-a)\ \text{divide}\ P(x)\iff P(a)=0\]</div>
+<p>Ou seja: cada raiz \(a\) de um polinômio corresponde a um fator \(x-a\). O <b>dispositivo de Briot-Ruffini</b> faz a divisão por \(x-a\) usando apenas os coeficientes. Para dividir \(x^3-7x+6\) por \(x-2\):</p>
+<div class="scroll-x"><table class="br">
+<tbody>
+<tr><td>\(2\)</td><td>\(1\)</td><td>\(0\)</td><td>\(-7\)</td><td>\(6\)</td></tr>
+<tr><td></td><td>\(1\)</td><td>\(2\)</td><td>\(-3\)</td><td>\(0\)</td></tr>
+</tbody></table></div>
+<ol>
+<li>À esquerda, a raiz do divisor (\(a=2\)); na primeira linha, <em>todos</em> os coeficientes do dividendo, em ordem decrescente de grau, com 0 no lugar do termo em \(x^2\), que falta.</li>
+<li>Desça o primeiro coeficiente: 1.</li>
+<li>Multiplique pela raiz e some ao coeficiente seguinte: \(1\cdot2+0=2\); \(2\cdot2-7=-3\); \(-3\cdot2+6=0\).</li>
+<li>O último número é o resto; os anteriores são os coeficientes do quociente, que tem um grau a menos.</li>
+</ol>
+<p>Resultado: \(x^3-7x+6=(x-2)(x^2+2x-3)=(x-2)(x-1)(x+3)\). Para encontrar uma primeira raiz, teste os divisores do termo independente: quando os coeficientes são inteiros e o coeficiente líder é 1, toda raiz inteira divide esse termo.</p>
+<div class="warn"><b>Erros clássicos na divisão</b>
+<ul>
+<li>Esquecer o coeficiente 0 dos termos ausentes: \(x^3-7x+6\) tem coeficientes \(1,\,0,\,-7,\,6\), e não \(1,\,-7,\,6\).</li>
+<li>Usar a raiz com o sinal trocado: para dividir por \(x+2\), escreve-se \(a=-2\) no dispositivo.</li>
+<li>Aplicar Briot-Ruffini a divisores que não são da forma \(x-a\). Para \(x^2+x-2\), use a chave.</li>
+<li>Na chave, subtrair só o primeiro termo: o sinal de menos atinge o produto inteiro.</li>
+</ul></div>
+<div class="bridge"><b>Ponte para o Cálculo</b>Se \(\displaystyle\lim_{x\to a}\frac{P(x)}{D(x)}\) dá \(\frac00\), então \(P(a)=D(a)=0\) e, por D'Alembert, os dois polinômios têm o fator \(x-a\). Briot-Ruffini extrai esse fator de cada um, ele se cancela e a indeterminação desaparece. Já a chave é o primeiro passo para integrar funções racionais e para achar assíntotas oblíquas.</div>
+<h3>Racionalização</h3>
+<p>Multiplicar pelo <b>conjugado</b> transforma uma soma ou diferença com raiz em diferença de quadrados, eliminando o radical:</p>
+<div class="fx">\[\left(\sqrt{a}-\sqrt{b}\right)\left(\sqrt{a}+\sqrt{b}\right)=a-b\]</div>
+<p>Para um denominador simples, \(\dfrac{1}{\sqrt a}=\dfrac{\sqrt a}{a}\). Multiplica-se sempre numerador e denominador pelo mesmo fator, o que equivale a multiplicar por 1.</p>
+<div class="bridge"><b>Ponte para o Cálculo</b>No ensino médio racionaliza-se o denominador; em Cálculo, é comum racionalizar o <em>numerador</em>. Em limites como \(\displaystyle\lim_{h\to0}\frac{\sqrt{x+h}-\sqrt{x}}{h}\), é o numerador que causa a indeterminação.</div>
+</div>
+
+<div class="sec" data-s="r">
+<article class="prob"><h4>Simplifique \(\dfrac{x^3-8}{x^2-4}\) para \(x\ne\pm2\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: produtos notáveis</span>
+<p>Diferença de cubos em cima, diferença de quadrados embaixo:</p>
+\[\frac{(x-2)(x^2+2x+4)}{(x-2)(x+2)}=\frac{x^2+2x+4}{x+2}\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: divisão por Briot-Ruffini</span>
+<p>Como \(x=2\) anula \(x^3-8\), o polinômio é divisível por \(x-2\). Com os coeficientes \(1,\,0,\,0,\,-8\) e a raiz 2: desce o 1; \(1\cdot2+0=2\); \(2\cdot2+0=4\); \(4\cdot2-8=0\) (resto). O quociente é \(x^2+2x+4\), e chega-se à mesma fração simplificada.</p>
+</div>
+<p class="note">Em \(x=2\) a expressão original dá \(\frac00\); a simplificada dá \(\frac{12}{4}=3\). Esse é o valor do limite quando \(x\to2\). Briot-Ruffini é útil quando você não lembra o produto notável.</p>
+</article>
+
+<article class="prob"><h4>Racionalize o numerador de \(\dfrac{\sqrt{x+h}-\sqrt{x}}{h}\), com \(h\ne0\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: multiplicar pelo conjugado</span>
+\[\frac{\sqrt{x+h}-\sqrt{x}}{h}\cdot\frac{\sqrt{x+h}+\sqrt{x}}{\sqrt{x+h}+\sqrt{x}}=\frac{(x+h)-x}{h\left(\sqrt{x+h}+\sqrt{x}\right)}=\frac{1}{\sqrt{x+h}+\sqrt{x}}\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: fatorar o denominador</span>
+<p>Leia a diferença de quadrados ao contrário: \(h=(x+h)-x=\left(\sqrt{x+h}\right)^2-\left(\sqrt{x}\right)^2\). Logo</p>
+\[\frac{\sqrt{x+h}-\sqrt{x}}{\left(\sqrt{x+h}-\sqrt{x}\right)\left(\sqrt{x+h}+\sqrt{x}\right)}=\frac{1}{\sqrt{x+h}+\sqrt{x}}\]
+</div>
+<p class="note">Agora é possível fazer \(h=0\) sem dividir por zero: obtém-se \(\dfrac{1}{2\sqrt{x}}\), a derivada de \(\sqrt{x}\).</p>
+</article>
+
+<article class="prob"><h4>Divida \(P(x)=2x^3-3x^2-11x+6\) por \(x-3\) e fatore \(P(x)\) completamente.</h4>
+<div class="way"><span class="way-tag">Abordagem A: método da chave</span>
+<ol>
+<li>\(2x^3\div x=2x^2\); \(2x^2(x-3)=2x^3-6x^2\); subtraindo, sobra \(3x^2-11x+6\).</li>
+<li>\(3x^2\div x=3x\); \(3x(x-3)=3x^2-9x\); subtraindo, sobra \(-2x+6\).</li>
+<li>\(-2x\div x=-2\); \(-2(x-3)=-2x+6\); subtraindo, sobra 0.</li>
+</ol>
+<p>Quociente \(2x^2+3x-2\), resto 0.</p>
+</div>
+<div class="way"><span class="way-tag">Abordagem B: Briot-Ruffini</span>
+<div class="scroll-x"><table class="br">
+<tbody>
+<tr><td>\(3\)</td><td>\(2\)</td><td>\(-3\)</td><td>\(-11\)</td><td>\(6\)</td></tr>
+<tr><td></td><td>\(2\)</td><td>\(3\)</td><td>\(-2\)</td><td>\(0\)</td></tr>
+</tbody></table></div>
+<p>Desce o 2; \(2\cdot3-3=3\); \(3\cdot3-11=-2\); \(-2\cdot3+6=0\). Mesmo quociente, \(2x^2+3x-2\), e resto 0.</p>
+</div>
+<p class="note">Resto zero confirma que 3 é raiz. O quociente fatora-se pelas raízes \(\frac12\) e \(-2\): \(P(x)=(x-3)(2x-1)(x+2)\). Briot-Ruffini é a chave escrita sem as letras; quando o divisor é \(x-a\), prefira-o.</p>
+</article>
+
+<article class="prob"><h4>Simplifique \(\dfrac{x^3-2x+1}{x^2-1}\) para \(x\ne\pm1\) e obtenha o valor de que a expressão se aproxima quando \(x\to1\).</h4>
+<p>Em \(x=1\), numerador e denominador se anulam (\(\frac00\)): por D'Alembert, ambos têm o fator \(x-1\).</p>
+<div class="way"><span class="way-tag">Abordagem A: Briot-Ruffini no numerador</span>
+<div class="scroll-x"><table class="br">
+<tbody>
+<tr><td>\(1\)</td><td>\(1\)</td><td>\(0\)</td><td>\(-2\)</td><td>\(1\)</td></tr>
+<tr><td></td><td>\(1\)</td><td>\(1\)</td><td>\(-1\)</td><td>\(0\)</td></tr>
+</tbody></table></div>
+\[\frac{(x-1)(x^2+x-1)}{(x-1)(x+1)}=\frac{x^2+x-1}{x+1}\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: fatoração por agrupamento</span>
+<p>Separe \(-2x\) em \(-x-x\) para fazer aparecer \(x^2-1\):</p>
+\[x^3-x-x+1=x(x^2-1)-(x-1)=(x-1)\big(x(x+1)-1\big)=(x-1)(x^2+x-1)\]
+</div>
+<p class="note">Na forma simplificada já se pode substituir \(x=1\): \(\frac{1+1-1}{1+1}=\frac12\). O agrupamento exige enxergar o truque; Briot-Ruffini é mecânico e funciona sempre que se conhece a raiz.</p>
+</article>
+</div>
+
+<div class="sec" data-s="f">
+<div class="ex"><p>Desenvolva \((2x-3)^2\).</p>
+<div class="sol">\[(2x)^2-2\cdot2x\cdot3+3^2=4x^2-12x+9\]<p>O termo do meio é o dobro do produto, com o sinal do binômio.</p></div></div>
+<div class="ex"><p>Fatore \(x^2-5x+6\).</p>
+<div class="sol"><p>Procure dois números de soma \(-5\) e produto \(6\): \(-2\) e \(-3\).</p>\[x^2-5x+6=(x-2)(x-3)\]</div></div>
+<div class="ex"><p>Fatore completamente \(x^3+x^2-4x-4\).</p>
+<div class="sol"><p>Agrupamento seguido de diferença de quadrados:</p>\[x^2(x+1)-4(x+1)=(x+1)(x^2-4)=(x+1)(x-2)(x+2)\]</div></div>
+<div class="ex"><p>Racionalize o denominador de \(\dfrac{6}{3-\sqrt3}\).</p>
+<div class="sol">\[\frac{6}{3-\sqrt3}\cdot\frac{3+\sqrt3}{3+\sqrt3}=\frac{6(3+\sqrt3)}{9-3}=3+\sqrt3\]</div></div>
+<div class="ex"><p>Simplifique \(\dfrac{x-9}{\sqrt{x}-3}\), para \(x\ge0\) e \(x\ne9\).</p>
+<div class="sol"><p>Veja \(x-9\) como diferença de quadrados, \(\left(\sqrt x\right)^2-3^2\):</p>\[\frac{(\sqrt x-3)(\sqrt x+3)}{\sqrt x-3}=\sqrt x+3\]</div></div>
+<div class="ex"><p>Use Briot-Ruffini para dividir \(x^3+2x^2-5x-6\) por \(x+1\) e fatore o polinômio.</p>
+<div class="sol"><p>Dividir por \(x+1\) significa usar \(a=-1\). Coeficientes \(1,\,2,\,-5,\,-6\): desce 1; \(1\cdot(-1)+2=1\); \(1\cdot(-1)-5=-6\); \(-6\cdot(-1)-6=0\).</p>\[x^3+2x^2-5x-6=(x+1)(x^2+x-6)=(x+1)(x+3)(x-2)\]</div></div>
+<div class="ex"><p>Sem efetuar a divisão, determine o resto de \(P(x)=x^4-3x^2+2x-5\) por \(x-2\).</p>
+<div class="sol"><p>Pelo teorema do resto, basta calcular \(P(2)\):</p>\[P(2)=16-12+4-5=3\]</div></div>
+<div class="ex"><p>Simplifique \(\dfrac{x^3-3x+2}{x^2-2x+1}\) para \(x\ne1\).</p>
+<div class="sol"><p>O denominador é \((x-1)^2\). No numerador, \(x=1\) é raiz; Briot-Ruffini com \(1,\,0,\,-3,\,2\) dá \(1,\,1,\,-2\) e resto 0, isto é, \(x^2+x-2=(x-1)(x+2)\).</p>\[\frac{(x-1)^2(x+2)}{(x-1)^2}=x+2\]</div></div>
+<div class="ex"><p>Divida \(x^3+2x^2-5\) por \(x^2+1\) pelo método da chave.</p>
+<div class="sol"><p>\(x^3\div x^2=x\); \(x(x^2+1)=x^3+x\); sobra \(2x^2-x-5\). Depois \(2x^2\div x^2=2\); \(2(x^2+1)=2x^2+2\); sobra \(-x-7\), de grau menor que 2.</p>\[x^3+2x^2-5=(x^2+1)(x+2)+(-x-7)\]</div></div>
+</div>
+</section>
+
+<!-- ======================= MÓDULO 3 ======================= -->
+<section class="view" id="v-m3" hidden>
+<div class="sec" data-s="t">
+<p class="lead">Resolver equações e, principalmente, inequações é o que permite estudar o sinal de uma derivada e descobrir onde uma função cresce ou decresce. O método do varal de sinais é a técnica central deste módulo.</p>
+<h3>Equações do 1º grau</h3>
+<p>Toda equação do 1º grau reduz-se a \(ax+b=0\), com \(a\ne0\), cuja única solução é \(x=-\dfrac ba\). Chega-se a essa forma com duas operações que preservam as soluções: somar o mesmo número aos dois lados e multiplicar os dois lados por um mesmo número <em>não nulo</em>.</p>
+<p><b>Exemplo.</b> Em \(\dfrac{x-1}{2}-\dfrac{x+2}{3}=1\), multiplique tudo pelo MMC dos denominadores, 6:</p>
+<div class="fx">\[3(x-1)-2(x+2)=6\ \Rightarrow\ 3x-3-2x-4=6\ \Rightarrow\ x=13\]</div>
+<p>Conferência: \(\frac{12}{2}-\frac{15}{3}=6-5=1\). Se, ao reduzir, o \(x\) desaparecer, há dois casos: \(0x=5\) é impossível (nenhuma solução) e \(0x=0\) é uma identidade (todo real é solução).</p>
+<h3>Equação do 2º grau</h3>
+<p>Para \(ax^2+bx+c=0\), com \(a\ne0\):</p>
+<div class="fx">\[\Delta=b^2-4ac\qquad x=\frac{-b\pm\sqrt{\Delta}}{2a}\]</div>
+<ul>
+<li>\(\Delta\gt0\): duas raízes reais distintas; \(\Delta=0\): uma raiz real dupla; \(\Delta\lt0\): nenhuma raiz real.</li>
+<li><b>Soma e produto:</b> \(r_1+r_2=-\dfrac{b}{a}\) e \(r_1r_2=\dfrac{c}{a}\).</li>
+<li><b>Forma fatorada:</b> \(ax^2+bx+c=a(x-r_1)(x-r_2)\).</li>
+</ul>
+<h3>Completamento de quadrados</h3>
+<p>A ideia é fabricar um trinômio quadrado perfeito somando e subtraindo o quadrado da metade do coeficiente de \(x\):</p>
+<div class="fx">\[x^2+bx=\left(x+\frac b2\right)^2-\left(\frac b2\right)^2\qquad ax^2+bx+c=a(x-h)^2+k\]</div>
+<p>Na forma canônica, \(h=-\dfrac{b}{2a}\) e \(k=-\dfrac{\Delta}{4a}\) são as coordenadas do vértice da parábola. Se \(a\gt0\), \(k\) é o valor mínimo; se \(a\lt0\), o máximo. A própria fórmula de Bhaskara é o completamento de quadrados feito uma vez, no caso geral.</p>
+<h3>Equações que recaem em quadráticas</h3>
+<p>Muitas equações de aparência complicada são quadráticas disfarçadas: uma mesma expressão aparece ao quadrado e à primeira potência. Dando um nome a ela (mudança de variável), resolve-se uma equação do 2º grau e depois se volta à incógnita original.</p>
+<div class="fx">\[\text{Biquadrada: } ax^4+bx^2+c=0\ \xrightarrow{\ y=x^2\ }\ ay^2+by+c=0\]</div>
+<ul>
+<li>Cada \(y\gt0\) devolve duas raízes, \(x=\pm\sqrt y\); \(y=0\) devolve \(x=0\); \(y\lt0\) não devolve raiz real.</li>
+<li>A mesma ideia resolve \(x-3\sqrt x-4=0\) (com \(u=\sqrt x\)), \((x^2-x)^2-8(x^2-x)+12=0\) (com \(u=x^2-x\)) e \(e^{2x}-3e^x+2=0\) (com \(u=e^x\), no Módulo 7).</li>
+<li>A nova variável herda restrições: \(y=x^2\ge0\), \(u=\sqrt x\ge0\), \(u=e^x\gt0\).</li>
+</ul>
+<h3>Equações irracionais</h3>
+<p>São as que têm a incógnita dentro de um radical, como \(\sqrt{2x-1}=8-x\). O roteiro:</p>
+<ol>
+<li><b>Isole</b> o radical em um dos lados.</li>
+<li><b>Eleve</b> os dois lados ao quadrado para eliminar a raiz.</li>
+<li><b>Resolva</b> a equação obtida.</li>
+<li><b>Verifique</b> cada candidato na equação <em>original</em> e descarte os que não a satisfazem.</li>
+</ol>
+<div class="warn"><b>Verificação obrigatória ao elevar ao quadrado</b>
+<ul>
+<li>\(a=b\Rightarrow a^2=b^2\) é verdade, mas a volta não vale: \(a^2=b^2\) equivale a \(a=b\) <em>ou</em> \(a=-b\). Exemplo: \((-3)^2=3^2\), mas \(-3\ne3\).</li>
+<li>Portanto, elevar ao quadrado junta às soluções de \(\sqrt{A}=B\) as soluções de \(\sqrt{A}=-B\). Estas últimas são <b>raízes estranhas</b>: aparecem na conta, mas não resolvem a equação original.</li>
+<li>Como \(\sqrt A\ge0\), uma raiz verdadeira precisa cumprir \(B\ge0\) (além de \(A\ge0\)). Testar cada candidato na equação original faz parte da resolução, não é capricho.</li>
+<li>É o mesmo cuidado das equações modulares (Módulo 4) e logarítmicas (Módulo 7): sempre que um passo não é reversível, as respostas precisam ser conferidas.</li>
+</ul></div>
+<div class="bridge"><b>Ponte para o Cálculo</b>Em problemas de otimização, a equação \(f'(x)=0\) é frequentemente irracional (distâncias envolvem raízes) ou redutível a quadrática, e um ponto crítico falso arruína a resposta. A mudança de variável é também a ideia central da integração por substituição.</div>
+<h3>Inequações: o método do varal de sinais</h3>
+<ol>
+<li>Passe tudo para um lado, de modo a comparar com <b>zero</b>.</li>
+<li>Reduza a uma única fração e <b>fatore</b> numerador e denominador.</li>
+<li>Marque na reta (o varal) as raízes de cada fator, em ordem crescente.</li>
+<li>Estude o <b>sinal de cada fator</b> em cada intervalo.</li>
+<li>Multiplique os sinais, coluna a coluna, para obter o sinal da expressão.</li>
+<li>Escolha os intervalos pedidos. Raízes do denominador ficam sempre <b>abertas</b>.</li>
+</ol>
+<div class="warn"><b>Proibido em inequações</b>
+<ul>
+<li>“Multiplicar cruzado” ou multiplicar os dois lados por uma expressão com \(x\): se ela for negativa, o sentido da desigualdade se inverte, e você não sabe o sinal dela.</li>
+<li>Concluir de \(x^2\ge4\) que \(x\ge\pm2\). O correto é \(x\le-2\) ou \(x\ge2\).</li>
+</ul></div>
+<div class="bridge"><b>Ponte para o Cálculo</b>Para saber onde \(f\) cresce, resolve-se \(f'(x)\gt0\); para a concavidade, \(f''(x)\gt0\). Ambas são inequações resolvidas com o varal de sinais.</div>
+</div>
+
+<div class="sec" data-s="r">
+<article class="prob"><h4>Resolva \(x^2-6x+5=0\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: fórmula de Bhaskara</span>
+\[\Delta=(-6)^2-4\cdot1\cdot5=16\qquad x=\frac{6\pm4}{2}\ \Rightarrow\ x=5\ \text{ou}\ x=1\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: completamento de quadrados</span>
+<p>A metade de \(-6\) é \(-3\), cujo quadrado é 9:</p>
+\[x^2-6x+9-9+5=0\ \Rightarrow\ (x-3)^2=4\ \Rightarrow\ x-3=\pm2\ \Rightarrow\ x=5\ \text{ou}\ x=1\]
+</div>
+<div class="way"><span class="way-tag">Abordagem C: soma e produto</span>
+<p>Dois números com soma 6 e produto 5: são 1 e 5. Logo \(x^2-6x+5=(x-1)(x-5)\).</p>
+</div>
+<p class="note">A abordagem B revela ainda o vértice \((3,-4)\) da parábola, informação que as outras não entregam.</p>
+</article>
+
+<article class="prob"><h4>Resolva \(\dfrac{x-1}{x+2}\ge2\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: varal de sinais</span>
+<p>Compare com zero e reduza a uma fração:</p>
+\[\frac{x-1}{x+2}-2\ge0\ \Rightarrow\ \frac{x-1-2(x+2)}{x+2}\ge0\ \Rightarrow\ \frac{-x-5}{x+2}\ge0\ \Rightarrow\ \frac{x+5}{x+2}\le0\]
+<p>No último passo multiplicamos por \(-1\), um número negativo conhecido, e invertemos o sentido. As raízes dos fatores são \(-5\) e \(-2\):</p>
+<div class="scroll-x"><table class="varal">
+<thead><tr><th></th><th>\(x\lt-5\)</th><th>\(-5\)</th><th>\(-5\lt x\lt-2\)</th><th>\(-2\)</th><th>\(x\gt-2\)</th></tr></thead>
+<tbody>
+<tr><th>\(x+5\)</th><td class="n">−</td><td>0</td><td class="p">+</td><td class="p">+</td><td class="p">+</td></tr>
+<tr><th>\(x+2\)</th><td class="n">−</td><td class="n">−</td><td class="n">−</td><td>0</td><td class="p">+</td></tr>
+<tr><th>Quociente</th><td class="p">+</td><td>0</td><td class="n">−</td><td>∄</td><td class="p">+</td></tr>
+</tbody></table></div>
+<p>Queremos quociente \(\le0\): \(S=[-5,\,-2)\). O \(-5\) entra (zera o numerador); o \(-2\) não (zera o denominador).</p>
+</div>
+<div class="way"><span class="way-tag">Abordagem B: análise por casos</span>
+<p>É permitido multiplicar por \(x+2\) desde que se separe pelo sinal dele.</p>
+<p><b>Caso 1:</b> \(x+2\gt0\), isto é, \(x\gt-2\). O sentido se mantém: \(x-1\ge2x+4\Rightarrow x\le-5\). Incompatível com \(x\gt-2\): sem soluções.</p>
+<p><b>Caso 2:</b> \(x+2\lt0\), isto é, \(x\lt-2\). O sentido se inverte: \(x-1\le2x+4\Rightarrow x\ge-5\). Com \(x\lt-2\), resulta \(-5\le x\lt-2\).</p>
+</div>
+<p class="note">Quem multiplica cruzado sem pensar obtém \(x\le-5\), que está errado: teste \(x=-6\) e veja que \(\frac{-7}{-4}=1{,}75\) não é maior ou igual a 2.</p>
+</article>
+
+<article class="prob"><h4>Resolva a equação biquadrada \(x^4-5x^2+4=0\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: mudança de variável</span>
+<p>Com \(y=x^2\) (\(y\ge0\)), a equação vira \(y^2-5y+4=0\), de raízes \(y=1\) e \(y=4\), ambas admissíveis. Voltando:</p>
+\[x^2=1\Rightarrow x=\pm1\qquad\qquad x^2=4\Rightarrow x=\pm2\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: fatoração direta</span>
+<p>Soma 5 e produto 4 em \(x^2\), depois diferença de quadrados:</p>
+\[x^4-5x^2+4=(x^2-1)(x^2-4)=(x-1)(x+1)(x-2)(x+2)=0\]
+</div>
+<p class="note">\(S=\{-2,-1,1,2\}\). Uma equação de grau 4 pode ter até quatro raízes reais; esquecer o \(\pm\) ao voltar de \(y\) para \(x\) perde metade delas.</p>
+</article>
+
+<article class="prob"><h4>Resolva \(\sqrt{2x-1}=8-x\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: elevar ao quadrado e verificar</span>
+<p>O radical já está isolado. Elevando ao quadrado:</p>
+\[2x-1=64-16x+x^2\ \Rightarrow\ x^2-18x+65=0\ \Rightarrow\ x=5\ \text{ou}\ x=13\]
+<p>Verificação na equação original. Para \(x=5\): \(\sqrt9=3\) e \(8-5=3\), confere. Para \(x=13\): \(\sqrt{25}=5\), mas \(8-13=-5\), não confere.</p>
+</div>
+<div class="way"><span class="way-tag">Abordagem B: impor as condições antes</span>
+<p>Uma raiz quadrada nunca é negativa, logo é preciso \(8-x\ge0\), isto é, \(x\le8\); e o radicando exige \(x\ge\frac12\). Para \(\frac12\le x\le8\) os dois lados são não negativos, e aí elevar ao quadrado é uma equivalência. Das raízes \(5\) e \(13\) da quadrática, só \(5\) está nesse intervalo.</p>
+</div>
+<p class="note">\(S=\{5\}\). O candidato \(x=13\) resolve \(\sqrt{2x-1}=-(8-x)\), a equação “espelhada” que o quadrado não distingue da original: é uma raiz estranha.</p>
+</article>
+</div>
+
+<div class="sec" data-s="f">
+<div class="ex"><p>Escreva \(x^2+8x+3\) na forma \((x-h)^2+k\).</p>
+<div class="sol"><p>Metade de 8 é 4; some e subtraia \(4^2=16\):</p>\[x^2+8x+16-16+3=(x+4)^2-13\]<p>Vértice em \((-4,-13)\).</p></div></div>
+<div class="ex"><p>Resolva \(2x^2-3x-2=0\).</p>
+<div class="sol">\[\Delta=9+16=25\qquad x=\frac{3\pm5}{4}\ \Rightarrow\ x=2\ \text{ou}\ x=-\frac12\]<p>Conferência: soma \(\frac32=-\frac ba\) e produto \(-1=\frac ca\).</p></div></div>
+<div class="ex"><p>Resolva \(x^2-x-6\lt0\).</p>
+<div class="sol"><p>Fatorando: \((x-3)(x+2)\lt0\). O produto é negativo quando os fatores têm sinais opostos, o que ocorre entre as raízes:</p>\[S=(-2,\,3)\]<p>Visualmente: parábola com concavidade para cima fica abaixo do eixo entre as raízes.</p></div></div>
+<div class="ex"><p>Resolva \(\dfrac{x-3}{x+1}\le0\).</p>
+<div class="sol"><p>Já está comparada com zero. Raízes: \(3\) (numerador) e \(-1\) (denominador). Sinais do quociente: \(+\) para \(x\lt-1\); \(-\) para \(-1\lt x\lt3\); \(+\) para \(x\gt3\).</p>\[S=(-1,\,3]\]</div></div>
+<div class="ex"><p>Resolva \(x^2\ge4\).</p>
+<div class="sol"><p>\(x^2-4\ge0\Rightarrow(x-2)(x+2)\ge0\). O produto é não negativo fora do intervalo das raízes:</p>\[S=(-\infty,-2]\cup[2,+\infty)\]<p>Outra leitura: \(\sqrt{x^2}\ge2\), ou seja, \(|x|\ge2\).</p></div></div>
+<div class="ex"><p>Resolva \(\dfrac{2x}{3}-1=\dfrac{x+1}{2}\).</p>
+<div class="sol"><p>Multiplique os dois lados por 6, o MMC dos denominadores:</p>\[4x-6=3x+3\ \Rightarrow\ x=9\]<p>Conferência: \(\frac{18}{3}-1=5\) e \(\frac{10}{2}=5\).</p></div></div>
+<div class="ex"><p>Resolva \(x^4-x^2-12=0\).</p>
+<div class="sol"><p>Com \(y=x^2\): \(y^2-y-12=0\Rightarrow y=4\) ou \(y=-3\). Como \(y=x^2\ge0\), descarta-se \(y=-3\).</p>\[x^2=4\ \Rightarrow\ x=\pm2\]</div></div>
+<div class="ex"><p>Resolva \(x-3\sqrt x-4=0\).</p>
+<div class="sol"><p>Com \(u=\sqrt x\ge0\), tem-se \(x=u^2\): \(u^2-3u-4=0\Rightarrow u=4\) ou \(u=-1\). Só \(u=4\) é admissível.</p>\[\sqrt x=4\ \Rightarrow\ x=16\]<p>Conferência: \(16-3\cdot4-4=0\).</p></div></div>
+<div class="ex"><p>Resolva \(\sqrt{x+7}=x+1\).</p>
+<div class="sol">\[x+7=x^2+2x+1\ \Rightarrow\ x^2+x-6=0\ \Rightarrow\ x=2\ \text{ou}\ x=-3\]<p>Verificação: para \(x=2\), \(\sqrt9=3=2+1\), confere. Para \(x=-3\), \(\sqrt4=2\), mas \(-3+1=-2\): raiz estranha. \(S=\{2\}\).</p></div></div>
+</div>
+</section>
+
+<!-- ======================= MÓDULO 4 ======================= -->
+<section class="view" id="v-m4" hidden>
+<div class="sec" data-s="t">
+<p class="lead">O módulo mede distância. Toda a definição formal de limite, com seus \(\varepsilon\) e \(\delta\), é escrita com desigualdades modulares; entender \(|x-a|\lt\delta\) agora poupa semanas depois.</p>
+<h3>Definição por partes</h3>
+<div class="fx">\[|x|=\begin{cases}x, &amp; \text{se } x\ge0\\[2pt] -x, &amp; \text{se } x\lt0\end{cases}\]</div>
+<p>Repare que \(-x\) é <em>positivo</em> quando \(x\) é negativo: \(|-7|=-(-7)=7\). O módulo não “tira o sinal”; ele troca o sinal apenas quando necessário.</p>
+<p><b>Interpretação geométrica.</b> \(|x|\) é a distância de \(x\) até a origem, e \(|x-a|\) é a distância entre \(x\) e \(a\) na reta real.</p>
+<h3>Propriedades</h3>
+<div class="fx">
+\[|x|\ge0\qquad |x|=0\iff x=0\qquad |-x|=|x|\qquad \sqrt{x^2}=|x|\]
+\[|xy|=|x|\,|y|\qquad \left|\frac xy\right|=\frac{|x|}{|y|}\qquad |x+y|\le|x|+|y|\]
+</div>
+<p>A última é a <b>desigualdade triangular</b>. Note que o módulo se distribui sobre produto e quociente, mas não sobre soma.</p>
+<h3>Equações e inequações modulares</h3>
+<p>Para \(k\gt0\):</p>
+<div class="fx">
+\[|u|=k\iff u=k\ \text{ou}\ u=-k\]
+\[|u|\lt k\iff -k\lt u\lt k\qquad\qquad |u|\gt k\iff u\lt-k\ \text{ou}\ u\gt k\]
+</div>
+<p>Se \(k\lt0\), a equação \(|u|=k\) e a inequação \(|u|\lt k\) não têm solução, enquanto \(|u|\gt k\) vale para todo \(u\).</p>
+<h3>Vizinhanças: \(|x-a|\lt\delta\)</h3>
+<div class="fx">\[|x-a|\lt\delta\iff a-\delta\lt x\lt a+\delta\]</div>
+<p>É o intervalo aberto de centro \(a\) e raio \(\delta\). Já \(0\lt|x-a|\lt\delta\) é a mesma vizinhança com o centro removido (\(x\ne a\)).</p>
+<div class="bridge"><b>Ponte para o Cálculo</b>A definição de limite diz: para todo \(\varepsilon\gt0\) existe \(\delta\gt0\) tal que \(0\lt|x-a|\lt\delta\) implica \(|f(x)-L|\lt\varepsilon\). Em palavras: tomando \(x\) suficientemente perto de \(a\), \(f(x)\) fica tão perto de \(L\) quanto se queira.</div>
+</div>
+
+<div class="sec" data-s="r">
+<article class="prob"><h4>Resolva \(|2x-1|\lt5\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: propriedade algébrica</span>
+\[-5\lt2x-1\lt5\ \Rightarrow\ -4\lt2x\lt6\ \Rightarrow\ -2\lt x\lt3\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: distância na reta</span>
+<p>Coloque o 2 em evidência: \(|2x-1|=2\left|x-\tfrac12\right|\). A inequação vira \(\left|x-\tfrac12\right|\lt\tfrac52\): os pontos a menos de 2,5 unidades de 0,5.</p>
+\[\tfrac12-\tfrac52\lt x\lt\tfrac12+\tfrac52\ \Rightarrow\ -2\lt x\lt3\]
+</div>
+<p class="note">A leitura geométrica mostra de imediato que a solução é um intervalo centrado em \(\frac12\) com raio \(\frac52\).</p>
+</article>
+
+<article class="prob"><h4>Resolva \(|x-1|=2x+4\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: definição por partes</span>
+<p><b>Se \(x\ge1\):</b> \(x-1=2x+4\Rightarrow x=-5\). Não satisfaz \(x\ge1\): descartado.</p>
+<p><b>Se \(x\lt1\):</b> \(-(x-1)=2x+4\Rightarrow 1-x=2x+4\Rightarrow x=-1\). Satisfaz \(x\lt1\): aceito.</p>
+</div>
+<div class="way"><span class="way-tag">Abordagem B: elevar ao quadrado</span>
+<p>Um módulo nunca é negativo, então é preciso \(2x+4\ge0\), isto é, \(x\ge-2\). Sob essa condição, elevar ao quadrado é legítimo:</p>
+\[(x-1)^2=(2x+4)^2\ \Rightarrow\ 3x^2+18x+15=0\ \Rightarrow\ x^2+6x+5=0\ \Rightarrow\ x=-1\ \text{ou}\ x=-5\]
+<p>Apenas \(x=-1\) cumpre \(x\ge-2\).</p>
+</div>
+<p class="note">\(S=\{-1\}\). Conferência: \(|-1-1|=2\) e \(2(-1)+4=2\). Nas duas abordagens surge o candidato falso \(x=-5\); por isso, em equação modular, <em>sempre</em> se verifica a condição.</p>
+</article>
+</div>
+
+<div class="sec" data-s="f">
+<div class="ex"><p>Escreva \(f(x)=|x-3|\) sem o símbolo de módulo.</p>
+<div class="sol"><p>O sinal de \(x-3\) muda em \(x=3\):</p>\[f(x)=\begin{cases}x-3, &amp; \text{se } x\ge3\\ 3-x, &amp; \text{se } x\lt3\end{cases}\]<p>O gráfico é um “V” com vértice em \((3,0)\).</p></div></div>
+<div class="ex"><p>Resolva \(|3x+2|=7\).</p>
+<div class="sol">\[3x+2=7\Rightarrow x=\tfrac53\qquad\text{ou}\qquad 3x+2=-7\Rightarrow x=-3\]</div></div>
+<div class="ex"><p>Resolva \(|x+1|\ge3\).</p>
+<div class="sol"><p>Distância de \(x\) até \(-1\) maior ou igual a 3:</p>\[x+1\le-3\ \text{ou}\ x+1\ge3\ \Rightarrow\ S=(-\infty,-4]\cup[2,+\infty)\]</div></div>
+<div class="ex"><p>Sabendo que \(|x-2|\lt0{,}1\), o que se pode afirmar sobre \(|3x-6|\)?</p>
+<div class="sol">\[|3x-6|=3\,|x-2|\lt3\cdot0{,}1=0{,}3\]<p>É o raciocínio de uma prova \(\varepsilon\)–\(\delta\): para garantir \(|3x-6|\lt\varepsilon\), basta tomar \(\delta=\varepsilon/3\).</p></div></div>
+<div class="ex"><p>Simplifique \(|x-5|+|x+1|\) para \(-1\le x\le5\).</p>
+<div class="sol"><p>Nesse intervalo, \(x-5\le0\) e \(x+1\ge0\):</p>\[(5-x)+(x+1)=6\]<p>Faz sentido: a soma das distâncias de \(x\) a 5 e a \(-1\) é a distância entre os dois, enquanto \(x\) está entre eles.</p></div></div>
+</div>
+</section>
+
+<!-- ======================= MÓDULO 5 ======================= -->
+<section class="view" id="v-m5" hidden>
+<div class="sec" data-s="t">
+<p class="lead">O Cálculo estuda funções. Antes de derivá-las, é preciso saber lê-las: reconhecer simetrias, enxergar uma função dentro da outra e saber quando um processo pode ser desfeito.</p>
+<h3>O que é uma função</h3>
+<p>Uma função \(f:A\to B\) associa a <em>cada</em> elemento \(x\) de \(A\) (domínio) <em>um único</em> elemento \(y=f(x)\) de \(B\) (contradomínio). A <b>imagem</b> é o conjunto dos valores efetivamente atingidos. Graficamente, vale o <b>teste da reta vertical</b>: nenhuma reta vertical corta o gráfico em mais de um ponto.</p>
+<h3>Paridade</h3>
+<div class="fx">\[\text{par: } f(-x)=f(x)\qquad\qquad \text{ímpar: } f(-x)=-f(x)\]</div>
+<p>O gráfico de uma função par é simétrico em relação ao eixo \(y\) (como \(x^2\), \(\cos x\), \(|x|\)); o de uma ímpar, em relação à origem (como \(x^3\), \(\sen x\), \(1/x\)). A maioria das funções não é nem par nem ímpar. O domínio precisa ser simétrico em relação a zero para a pergunta fazer sentido.</p>
+<h3>Composição</h3>
+<div class="fx">\[(f\circ g)(x)=f\big(g(x)\big)\]</div>
+<p>Aplica-se primeiro \(g\) (a função de dentro) e depois \(f\) (a de fora). O domínio de \(f\circ g\) são os \(x\) do domínio de \(g\) tais que \(g(x)\) pertence ao domínio de \(f\). Em geral, \(f\circ g\ne g\circ f\).</p>
+<p><b>Exemplo.</b> Com \(f(x)=\sqrt{x}\) e \(g(x)=x^2-4\): \(f(g(x))=\sqrt{x^2-4}\), definida para \(x\le-2\) ou \(x\ge2\); já \(g(f(x))=(\sqrt x)^2-4=x-4\), definida <em>apenas</em> para \(x\ge0\), pois \(x\) precisa passar primeiro pela raiz.</p>
+<h3>Função inversa</h3>
+<p>\(f\) admite inversa quando é <b>injetora</b>: valores diferentes de \(x\) produzem valores diferentes de \(y\) (teste da reta horizontal). A inversa desfaz \(f\):</p>
+<div class="fx">\[f^{-1}\big(f(x)\big)=x\qquad f\big(f^{-1}(y)\big)=y\]</div>
+<ul>
+<li>O domínio de \(f^{-1}\) é a imagem de \(f\), e vice-versa.</li>
+<li>Os gráficos de \(f\) e \(f^{-1}\) são simétricos em relação à reta \(y=x\).</li>
+<li>Para obtê-la: escreva \(y=f(x)\), troque \(x\) por \(y\) e isole \(y\).</li>
+</ul>
+<div class="warn"><b>Notação traiçoeira</b><ul><li>\(f^{-1}(x)\) é a função inversa, <em>não</em> \(\dfrac{1}{f(x)}\). Por exemplo, a inversa de \(f(x)=2x\) é \(\dfrac x2\), e não \(\dfrac{1}{2x}\).</li></ul></div>
+<h3>Transformações de gráficos</h3>
+<div class="scroll-x"><table>
+<thead><tr><th>Expressão</th><th>Efeito sobre o gráfico de \(f\)</th></tr></thead>
+<tbody>
+<tr><th>\(f(x)+k\)</th><td class="l">desloca \(k\) unidades para cima</td></tr>
+<tr><th>\(f(x-h)\)</th><td class="l">desloca \(h\) unidades para a direita</td></tr>
+<tr><th>\(-f(x)\)</th><td class="l">reflete em relação ao eixo \(x\)</td></tr>
+<tr><th>\(f(-x)\)</th><td class="l">reflete em relação ao eixo \(y\)</td></tr>
+<tr><th>\(c\,f(x)\), \(c\gt1\)</th><td class="l">estica verticalmente pelo fator \(c\)</td></tr>
+</tbody></table></div>
+<div class="bridge"><b>Ponte para o Cálculo</b>A Regra da Cadeia deriva composições: \(\big(f(g(x))\big)'=f'(g(x))\cdot g'(x)\). Para usá-la, você precisa enxergar que \(\sqrt{x^2+5}\) é “raiz de algo”, com \(g(x)=x^2+5\) por dentro e \(f(u)=\sqrt u\) por fora.</div>
+</div>
+
+<div class="sec" data-s="r">
+<article class="prob"><h4>Determine a inversa de \(f(x)=\dfrac{2x+1}{x-3}\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: trocar as variáveis e isolar</span>
+<p>Escreva \(y=\dfrac{2x+1}{x-3}\), troque \(x\) por \(y\) e resolva para \(y\):</p>
+\[x=\frac{2y+1}{y-3}\ \Rightarrow\ xy-3x=2y+1\ \Rightarrow\ y(x-2)=3x+1\ \Rightarrow\ f^{-1}(x)=\frac{3x+1}{x-2}\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: desfazer as operações na ordem inversa</span>
+<p>Dividindo, \(f(x)=2+\dfrac{7}{x-3}\), pois \(2(x-3)+7=2x+1\). Assim, \(f\) faz: subtrai 3, inverte, multiplica por 7, soma 2. Desfazendo de trás para a frente a partir de \(y\):</p>
+\[y-2=\frac{7}{x-3}\ \Rightarrow\ x-3=\frac{7}{y-2}\ \Rightarrow\ x=3+\frac{7}{y-2}=\frac{3y+1}{y-2}\]
+</div>
+<p class="note">Os resultados coincidem. O domínio de \(f^{-1}\) é \(x\ne2\), e de fato 2 é o único valor que \(f\) nunca atinge (a forma \(2+\frac{7}{x-3}\) deixa isso evidente).</p>
+</article>
+
+<article class="prob"><h4>Classifique \(f(x)=\dfrac{x^3}{x^2+1}\) quanto à paridade.</h4>
+<div class="way"><span class="way-tag">Abordagem A: calcular \(f(-x)\)</span>
+\[f(-x)=\frac{(-x)^3}{(-x)^2+1}=\frac{-x^3}{x^2+1}=-f(x)\]
+<p>Logo \(f\) é ímpar.</p>
+</div>
+<div class="way"><span class="way-tag">Abordagem B: regras de paridade</span>
+<p>O numerador \(x^3\) é ímpar; o denominador \(x^2+1\) é par. O quociente (ou produto) de uma função ímpar por uma par é ímpar, assim como “negativo vezes positivo dá negativo”.</p>
+</div>
+<p class="note">Regras úteis: par·par = par, ímpar·ímpar = par, par·ímpar = ímpar. Em integrais definidas em \([-a,a]\), uma função ímpar integra zero sem nenhuma conta.</p>
+</article>
+</div>
+
+<div class="sec" data-s="f">
+<div class="ex"><p>Dadas \(f(x)=x^2+1\) e \(g(x)=3x-2\), calcule \(f(g(x))\) e \(g(f(x))\).</p>
+<div class="sol">\[f(g(x))=(3x-2)^2+1=9x^2-12x+5\qquad g(f(x))=3(x^2+1)-2=3x^2+1\]<p>Resultados diferentes: a composição não é comutativa.</p></div></div>
+<div class="ex"><p>Escreva \(h(x)=\sqrt{x^2+5}\) como composição \(f(g(x))\).</p>
+<div class="sol"><p>Pergunte: “qual é a última operação feita?”. É a raiz. Então a função de fora é \(f(u)=\sqrt u\) e a de dentro é \(g(x)=x^2+5\).</p></div></div>
+<div class="ex"><p>Classifique \(f(x)=x^4-3x^2+\cos x\) quanto à paridade.</p>
+<div class="sol">\[f(-x)=(-x)^4-3(-x)^2+\cos(-x)=x^4-3x^2+\cos x=f(x)\]<p>Função par: soma de funções pares é par.</p></div></div>
+<div class="ex"><p>Determine a inversa de \(f(x)=x^3+2\).</p>
+<div class="sol"><p>\(f\) eleva ao cubo e soma 2; a inversa subtrai 2 e tira a raiz cúbica:</p>\[x=y^3+2\ \Rightarrow\ y=\sqrt[3]{x-2}\ \Rightarrow\ f^{-1}(x)=\sqrt[3]{x-2}\]</div></div>
+<div class="ex"><p>A função \(f(x)=x^2\), com domínio \(\R\), tem inversa? E se o domínio for restrito a \(x\ge0\)?</p>
+<div class="sol"><p>Em \(\R\) não: \(f(-2)=f(2)=4\), logo não é injetora (uma reta horizontal corta a parábola duas vezes). Restrita a \(x\ge0\), passa a ser injetora e \(f^{-1}(x)=\sqrt x\). É a mesma ideia usada para definir \(\arcsin\), \(\arccos\) e \(\arctan\). Elas são estudadas no Módulo 8.</p></div></div>
+</div>
+</section>
+
+<!-- ======================= MÓDULO 6 ======================= -->
+<section class="view" id="v-m6" hidden>
+<div class="sec" data-s="t">
+<p class="lead">O domínio é o conjunto de valores de \(x\) para os quais a expressão faz sentido. Em Cálculo ele vem antes de tudo: não se calcula limite, derivada ou integral onde a função não existe.</p>
+<h3>As quatro restrições fundamentais</h3>
+<p>Uma expressão está definida para todo real, a menos que contenha um destes quatro elementos:</p>
+<div class="scroll-x"><table>
+<thead><tr><th></th><th>Onde aparece</th><th>Condição</th></tr></thead>
+<tbody>
+<tr><th>1. Denominador</th><td>\(\dfrac{N(x)}{D(x)}\)</td><td>\(D(x)\ne0\)</td></tr>
+<tr><th>2. Raiz de índice par</th><td>\(\sqrt[2n]{u(x)}\)</td><td>\(u(x)\ge0\)</td></tr>
+<tr><th>3. Logaritmando</th><td>\(\log_a u(x)\), \(\ln u(x)\)</td><td>\(u(x)\gt0\)</td></tr>
+<tr><th>4. Trigonométricas descontínuas</th><td>\(\tg u\), \(\sec u\)<br>\(\cotg u\), \(\cossec u\)</td><td>\(u\ne\frac\pi2+k\pi\)<br>\(u\ne k\pi\)</td></tr>
+</tbody></table></div>
+<ul>
+<li>Combinação frequente: raiz par no denominador, \(\dfrac{1}{\sqrt{u}}\), exige \(u\gt0\) (estritamente).</li>
+<li>Raízes de índice ímpar, como \(\sqrt[3]{u}\), não impõem restrição.</li>
+<li>Havendo várias restrições, o domínio é a <b>interseção</b> de todas: todas precisam valer ao mesmo tempo.</li>
+<li>Determine o domínio na expressão <em>original</em>, antes de simplificar.</li>
+</ul>
+<h3>Imagem</h3>
+<p>A imagem é o conjunto dos valores \(y\) que a função realmente assume. Três estratégias:</p>
+<ol>
+<li><b>Imagens conhecidas:</b> \(x^2\ge0\), \(\sqrt{x}\ge0\), \(e^x\gt0\), \(-1\le\sen x\le1\), \(|x|\ge0\). Parta delas e aplique as transformações.</li>
+<li><b>Forma canônica</b> (funções quadráticas): \(a(x-h)^2+k\) tem imagem \([k,+\infty)\) se \(a\gt0\) e \((-\infty,k]\) se \(a\lt0\).</li>
+<li><b>Isolar \(x\):</b> os valores de \(y\) para os quais a equação \(y=f(x)\) tem solução em \(x\).</li>
+</ol>
+<div class="bridge"><b>Ponte para o Cálculo</b>Os pontos excluídos do domínio são justamente onde moram as assíntotas verticais e as descontinuidades. E os candidatos a máximo e mínimo só valem se pertencerem ao domínio.</div>
+</div>
+
+<div class="sec" data-s="r">
+<article class="prob"><h4>Determine o domínio de \(f(x)=\ln\!\left(\dfrac{x-1}{x+2}\right)\).</h4>
+<p>O logaritmando deve ser positivo: \(\dfrac{x-1}{x+2}\gt0\). Essa única condição já garante \(x\ne-2\).</p>
+<div class="way"><span class="way-tag">Abordagem A: varal de sinais</span>
+<div class="scroll-x"><table class="varal">
+<thead><tr><th></th><th>\(x\lt-2\)</th><th>\(-2\lt x\lt1\)</th><th>\(x\gt1\)</th></tr></thead>
+<tbody>
+<tr><th>\(x-1\)</th><td class="n">−</td><td class="n">−</td><td class="p">+</td></tr>
+<tr><th>\(x+2\)</th><td class="n">−</td><td class="p">+</td><td class="p">+</td></tr>
+<tr><th>Quociente</th><td class="p">+</td><td class="n">−</td><td class="p">+</td></tr>
+</tbody></table></div>
+<p>\(D(f)=(-\infty,-2)\cup(1,+\infty)\).</p>
+</div>
+<div class="way"><span class="way-tag">Abordagem B: trocar o quociente por um produto</span>
+<p>Um quociente e um produto dos mesmos fatores têm sempre o mesmo sinal. Logo a condição equivale a \((x-1)(x+2)\gt0\). Trata-se de uma parábola com concavidade para cima e raízes \(-2\) e \(1\): positiva <em>fora</em> das raízes. Mesmo resultado.</p>
+</div>
+<p class="note">Cuidado: \(\ln(x-1)-\ln(x+2)\) <em>não</em> tem o mesmo domínio. Ali cada logaritmo exige seu argumento positivo, o que dá apenas \(x\gt1\). As propriedades dos logaritmos podem alterar o domínio.</p>
+</article>
+
+<article class="prob"><h4>Determine a imagem de \(f(x)=x^2-4x+1\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: completar o quadrado</span>
+\[f(x)=(x-2)^2-4+1=(x-2)^2-3\]
+<p>Como \((x-2)^2\ge0\), com igualdade em \(x=2\), temos \(f(x)\ge-3\). Imagem: \([-3,+\infty)\).</p>
+</div>
+<div class="way"><span class="way-tag">Abordagem B: exigir que exista \(x\)</span>
+<p>Um valor \(y\) pertence à imagem se \(x^2-4x+1=y\) tiver solução real, isto é, se \(x^2-4x+(1-y)=0\) tiver \(\Delta\ge0\):</p>
+\[16-4(1-y)\ge0\ \Rightarrow\ 12+4y\ge0\ \Rightarrow\ y\ge-3\]
+</div>
+<p class="note">A abordagem B funciona também para funções racionais, onde não há vértice para consultar.</p>
+</article>
+</div>
+
+<div class="sec" data-s="f">
+<div class="ex"><p>Determine o domínio de \(f(x)=\dfrac{1}{\sqrt{5-x}}\).</p>
+<div class="sol"><p>Raiz par no denominador: o radicando deve ser estritamente positivo.</p>\[5-x\gt0\ \Rightarrow\ x\lt5\qquad D(f)=(-\infty,5)\]</div></div>
+<div class="ex"><p>Determine o domínio de \(f(x)=\ln(4-x^2)\).</p>
+<div class="sol">\[4-x^2\gt0\ \Rightarrow\ x^2\lt4\ \Rightarrow\ -2\lt x\lt2\qquad D(f)=(-2,2)\]</div></div>
+<div class="ex"><p>Determine o domínio de \(f(x)=\dfrac{\sqrt{x-1}}{x-3}+\ln(6-x)\).</p>
+<div class="sol"><p>Três restrições simultâneas: \(x-1\ge0\); \(x-3\ne0\); \(6-x\gt0\). Interseção de \(x\ge1\), \(x\ne3\) e \(x\lt6\):</p>\[D(f)=[1,3)\cup(3,6)\]</div></div>
+<div class="ex"><p>Determine o domínio de \(f(x)=\tg(2x)\).</p>
+<div class="sol"><p>A tangente não existe onde o cosseno se anula:</p>\[2x\ne\frac\pi2+k\pi\ \Rightarrow\ x\ne\frac\pi4+\frac{k\pi}{2},\quad k\in\mathbb{Z}\]</div></div>
+<div class="ex"><p>Determine a imagem de \(f(x)=3+2\sen x\).</p>
+<div class="sol"><p>Parta da imagem conhecida do seno e aplique as operações:</p>\[-1\le\sen x\le1\ \Rightarrow\ -2\le2\sen x\le2\ \Rightarrow\ 1\le3+2\sen x\le5\]<p>Imagem: \([1,5]\).</p></div></div>
+</div>
+</section>
+
+<!-- ======================= MÓDULO 7 ======================= -->
+<section class="view" id="v-m7" hidden>
+<div class="sec" data-s="t">
+<p class="lead">Exponenciais modelam crescimento proporcional ao que já existe; logaritmos respondem “qual expoente?”. Em Cálculo, a base \(e\) domina porque torna as derivadas o mais simples possível.</p>
+<h3>Função exponencial</h3>
+<p>\(f(x)=a^x\), com \(a\gt0\) e \(a\ne1\). Domínio \(\R\); imagem \((0,+\infty)\); o gráfico passa por \((0,1)\) e tem o eixo \(x\) como assíntota horizontal. É crescente se \(a\gt1\) e decrescente se \(0\lt a\lt1\). Em particular, \(a^x\) <em>nunca</em> é zero nem negativo.</p>
+<h3>O número \(e\)</h3>
+<div class="fx">\[e=\lim_{n\to\infty}\left(1+\frac1n\right)^{n}\approx2{,}71828\]</div>
+<p>É a base “natural” porque \(e^x\) é a única exponencial cuja inclinação em cada ponto é igual ao próprio valor da função: a derivada de \(e^x\) é \(e^x\).</p>
+<h3>Logaritmo</h3>
+<div class="fx">\[\log_a x=y\iff a^y=x\qquad (x\gt0,\ a\gt0,\ a\ne1)\qquad\qquad \ln x=\log_e x\]</div>
+<p>O logaritmo é a função inversa da exponencial de mesma base. Daí as identidades de cancelamento:</p>
+<div class="fx">\[a^{\log_a x}=x\quad(x\gt0)\qquad \log_a(a^x)=x\qquad \ln1=0\qquad \ln e=1\]</div>
+<h3>Propriedades operatórias</h3>
+<div class="fx">
+\[\ln(xy)=\ln x+\ln y\qquad \ln\!\left(\frac xy\right)=\ln x-\ln y\qquad \ln(x^r)=r\ln x\]
+\[\log_a x=\frac{\ln x}{\ln a}\qquad\qquad a^x=e^{x\ln a}\]
+</div>
+<p>O logaritmo transforma produtos em somas e potências em produtos. As duas últimas fórmulas (mudança de base) permitem reduzir qualquer exponencial ou logaritmo à base \(e\).</p>
+<div class="warn"><b>Erros clássicos</b><ul>
+<li>\(\ln(x+y)\ne\ln x+\ln y\): não existe propriedade para o logaritmo de uma soma.</li>
+<li>\((\ln x)^2\ne\ln(x^2)\): só o segundo é igual a \(2\ln x\).</li>
+<li>\(\dfrac{\ln x}{\ln y}\ne\ln\dfrac xy\).</li>
+</ul></div>
+<h3>Equações transcendentais</h3>
+<ul>
+<li><b>Incógnita no expoente:</b> isole a exponencial e aplique \(\ln\) nos dois lados, ou iguale as bases quando possível.</li>
+<li><b>Tipo quadrático:</b> em \(e^{2x}+b\,e^x+c=0\), substitua \(u=e^x\) (com \(u\gt0\)).</li>
+<li><b>Incógnita no logaritmando:</b> reúna os logaritmos, exponencie e <em>confira o domínio</em> das soluções na equação original.</li>
+</ul>
+<div class="bridge"><b>Ponte para o Cálculo</b>\((e^x)'=e^x\) e \((\ln x)'=\dfrac1x\). Para derivar \(2^x\) ou \(\log_2x\), reescreve-se tudo na base \(e\) com as fórmulas de mudança de base.</div>
+</div>
+
+<div class="sec" data-s="r">
+<article class="prob"><h4>Resolva \(2^{x+1}=5\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: aplicar \(\ln\) nos dois lados</span>
+\[(x+1)\ln2=\ln5\ \Rightarrow\ x=\frac{\ln5}{\ln2}-1\approx1{,}32\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: definição de logaritmo na base 2</span>
+<p>Primeiro isole a potência: \(2\cdot2^x=5\Rightarrow2^x=\tfrac52\). Pela definição,</p>
+\[x=\log_2\!\left(\tfrac52\right)=\log_25-1\]
+</div>
+<p class="note">As respostas são iguais, pois \(\log_25=\frac{\ln5}{\ln2}\). A abordagem A é a que funciona em qualquer calculadora e é a mais usada em Cálculo.</p>
+</article>
+
+<article class="prob"><h4>Resolva \(\ln x+\ln(x-3)=\ln10\).</h4>
+<p>Domínio: \(x\gt0\) e \(x-3\gt0\), ou seja, \(x\gt3\).</p>
+<div class="way"><span class="way-tag">Abordagem A: propriedade do produto</span>
+\[\ln\big(x(x-3)\big)=\ln10\ \Rightarrow\ x^2-3x-10=0\ \Rightarrow\ x=5\ \text{ou}\ x=-2\]
+<p>Apenas \(x=5\) está no domínio.</p>
+</div>
+<div class="way"><span class="way-tag">Abordagem B: monotonicidade e inspeção</span>
+<p>No domínio \(x\gt3\), a função \(g(x)=\ln x+\ln(x-3)\) é soma de funções crescentes, logo é estritamente crescente e assume cada valor no máximo uma vez. Testando \(x=5\): \(\ln5+\ln2=\ln10\). Encontrada uma solução, ela é a única.</p>
+</div>
+<p class="note">\(S=\{5\}\). A raiz \(x=-2\) é estranha: nasceu porque \(\ln(x(x-3))\) tem domínio maior que a expressão original.</p>
+</article>
+</div>
+
+<div class="sec" data-s="f">
+<div class="ex"><p>Calcule \(\log_232-\log_3\!\left(\tfrac19\right)+\ln e^3\).</p>
+<div class="sol"><p>\(2^5=32\); \(3^{-2}=\frac19\); \(\ln e^3=3\).</p>\[5-(-2)+3=10\]</div></div>
+<div class="ex"><p>Expanda \(\ln\!\left(\dfrac{x^2\sqrt y}{z^3}\right)\), com \(x,y,z\gt0\).</p>
+<div class="sol">\[\ln x^2+\ln y^{1/2}-\ln z^3=2\ln x+\tfrac12\ln y-3\ln z\]<p>Expandir assim antes de derivar chama-se derivação logarítmica.</p></div></div>
+<div class="ex"><p>Resolva \(e^{2x}-3e^x+2=0\).</p>
+<div class="sol"><p>Como \(e^{2x}=(e^x)^2\), faça \(u=e^x\gt0\):</p>\[u^2-3u+2=0\ \Rightarrow\ u=1\ \text{ou}\ u=2\ \Rightarrow\ x=0\ \text{ou}\ x=\ln2\]</div></div>
+<div class="ex"><p>Resolva \(3e^{2x-1}=12\).</p>
+<div class="sol">\[e^{2x-1}=4\ \Rightarrow\ 2x-1=\ln4\ \Rightarrow\ x=\frac{1+\ln4}{2}=\frac12+\ln2\]</div></div>
+<div class="ex"><p>Resolva \(\log_2(x-1)=3\).</p>
+<div class="sol"><p>Pela definição: \(x-1=2^3=8\Rightarrow x=9\). Está no domínio (\(x\gt1\)).</p></div></div>
+</div>
+</section>
+
+<!-- ======================= MÓDULO 8 ======================= -->
+<section class="view" id="v-m8" hidden>
+<div class="sec" data-s="t">
+<p class="lead">Em Cálculo, seno e cosseno são funções de um número real, medido em radianos e lido no ciclo trigonométrico. As identidades deste módulo são as que destravam derivadas e, sobretudo, integrais trigonométricas.</p>
+<h3>Razões trigonométricas no triângulo retângulo</h3>
+<p>A trigonometria nasce no triângulo retângulo. Para um ângulo agudo \(\alpha\):</p>
+<div class="fx">\[\sen\alpha=\frac{\text{cateto oposto}}{\text{hipotenusa}}\qquad \cos\alpha=\frac{\text{cateto adjacente}}{\text{hipotenusa}}\qquad \tg\alpha=\frac{\text{cateto oposto}}{\text{cateto adjacente}}\]</div>
+<figure>
+<svg viewBox="0 0 280 200" width="300" role="img" aria-label="Triângulo retângulo com ângulo alfa, cateto oposto, cateto adjacente e hipotenusa" fill="none" stroke="currentColor" font-family="Inter, sans-serif" font-size="12">
+<path d="M40,160 L230,160 L230,40 Z" stroke-width="1.8"/>
+<path d="M216,160 L216,146 L230,146" stroke-width="1.2"/>
+<path d="M72,160 A32,32 0 0 0 67.1,143.1" stroke-width="1.2"/>
+<line x1="40" y1="160" x2="230" y2="160" stroke="var(--accent)" stroke-width="2.6"/>
+<line x1="230" y1="160" x2="230" y2="40" stroke="var(--bad)" stroke-width="2.6"/>
+<g fill="currentColor" stroke="none">
+<text x="78" y="153">α</text>
+<text x="96" y="180" fill="var(--accent)">cateto adjacente</text>
+<text x="236" y="96" fill="var(--bad)">cateto</text><text x="236" y="111" fill="var(--bad)">oposto</text>
+<text x="92" y="88">hipotenusa</text>
+</g></svg>
+<figcaption>“Oposto” e “adjacente” dependem do ângulo escolhido; a hipotenusa é sempre o lado oposto ao ângulo reto.</figcaption>
+</figure>
+<ul>
+<li>As razões dependem só do ângulo, não do tamanho do triângulo: triângulos retângulos com o mesmo \(\alpha\) são semelhantes.</li>
+<li>Dividindo o Teorema de Pitágoras pelo quadrado da hipotenusa, obtém-se \(\sen^2\alpha+\cos^2\alpha=1\).</li>
+<li>Ângulos complementares trocam seno por cosseno: \(\sen\alpha=\cos(90^\circ-\alpha)\).</li>
+<li>Para resolver um triângulo: cateto oposto \(=\) hipotenusa \(\cdot\sen\alpha\); cateto adjacente \(=\) hipotenusa \(\cdot\cos\alpha\); cateto oposto \(=\) cateto adjacente \(\cdot\tg\alpha\).</li>
+</ul>
+<p><b>Ângulos notáveis.</b> Os valores de \(30^\circ\), \(45^\circ\) e \(60^\circ\) não precisam ser decorados: saem de dois triângulos. A metade de um quadrado de lado 1 tem catetos 1 e 1 e hipotenusa \(\sqrt2\) (ângulos de \(45^\circ\)). A metade de um triângulo equilátero de lado 2 tem catetos 1 e \(\sqrt3\) e hipotenusa 2 (ângulos de \(30^\circ\) e \(60^\circ\)).</p>
+<div class="scroll-x"><table>
+<thead><tr><th>\(\alpha\)</th><th>\(30^\circ\)</th><th>\(45^\circ\)</th><th>\(60^\circ\)</th></tr></thead>
+<tbody>
+<tr><th>\(\sen\alpha\)</th><td>\(\frac12\)</td><td>\(\frac{\sqrt2}{2}\)</td><td>\(\frac{\sqrt3}{2}\)</td></tr>
+<tr><th>\(\cos\alpha\)</th><td>\(\frac{\sqrt3}{2}\)</td><td>\(\frac{\sqrt2}{2}\)</td><td>\(\frac12\)</td></tr>
+<tr><th>\(\tg\alpha\)</th><td>\(\frac{\sqrt3}{3}\)</td><td>\(1\)</td><td>\(\sqrt3\)</td></tr>
+</tbody></table></div>
+<div class="warn"><b>Erros clássicos no triângulo retângulo</b>
+<ul>
+<li>Aplicar essas razões a triângulos que não são retângulos.</li>
+<li>Trocar oposto por adjacente ao mudar de ângulo: o cateto oposto a \(\alpha\) é o adjacente ao outro ângulo agudo.</li>
+<li>Usar a calculadora em graus quando o problema está em radianos, ou o contrário.</li>
+</ul></div>
+<p><b>Do triângulo ao ciclo.</b> Coloque um triângulo retângulo de hipotenusa 1 com o ângulo \(\alpha\) na origem: o cateto adjacente mede \(\cos\alpha\) e o oposto mede \(\sen\alpha\), que são as coordenadas do vértice sobre o círculo de raio 1. O ciclo trigonométrico, mais adiante neste módulo, parte dessa figura e estende seno e cosseno a qualquer ângulo, inclusive maiores que \(90^\circ\) e negativos.</p>
+<div class="bridge"><b>Ponte para o Cálculo</b>Problemas de taxas relacionadas e de otimização (escadas que deslizam, ângulos de visão, sombras) começam com um triângulo retângulo. E a substituição trigonométrica em integrais consiste em desenhar um triângulo retângulo para a expressão \(\sqrt{a^2-x^2}\).</div>
+<h3>Radianos</h3>
+<p>Um ângulo em radianos é a razão entre o comprimento do arco e o raio. Uma volta completa tem arco \(2\pi r\), portanto vale \(2\pi\) rad.</p>
+<div class="fx">\[\pi\ \text{rad}=180^\circ\qquad \text{graus}\to\text{rad: multiplique por }\frac{\pi}{180}\qquad \text{rad}\to\text{graus: multiplique por }\frac{180}{\pi}\]</div>
+<p>As fórmulas de derivação, como \((\sen x)'=\cos x\), valem <em>somente</em> com \(x\) em radianos.</p>
+<h3>Ciclo trigonométrico</h3>
+<p>No círculo de raio 1 centrado na origem, o ângulo \(\theta\) determina o ponto \(P=(\cos\theta,\ \sen\theta)\): cosseno é a abscissa, seno é a ordenada.</p>
+<figure>
+<svg viewBox="0 0 280 260" width="300" role="img" aria-label="Ciclo trigonométrico com o ponto P de coordenadas cosseno e seno de teta" fill="none" stroke="currentColor" font-family="Inter, sans-serif" font-size="12">
+<line x1="20" y1="130" x2="260" y2="130" stroke-width="1" opacity=".5"/><line x1="140" y1="16" x2="140" y2="244" stroke-width="1" opacity=".5"/>
+<circle cx="140" cy="130" r="90" stroke-width="1.5"/>
+<path d="M164,130 A24,24 0 0 0 155.4,111.6" stroke-width="1.2"/>
+<line x1="140" y1="130" x2="197.9" y2="61.1" stroke-width="2"/>
+<line x1="197.9" y1="61.1" x2="197.9" y2="130" stroke="var(--bad)" stroke-width="2.5"/>
+<line x1="140" y1="130" x2="197.9" y2="130" stroke="var(--accent)" stroke-width="2.5"/>
+<circle cx="197.9" cy="61.1" r="4" fill="currentColor"/>
+<g fill="currentColor" stroke="none">
+<text x="170" y="122">θ</text><text x="203" y="56">P</text>
+<text x="150" y="146" fill="var(--accent)">cos θ</text><text x="203" y="100" fill="var(--bad)">sen θ</text>
+<text x="236" y="146">1</text><text x="146" y="34">1</text>
+<text x="224" y="24" opacity=".75">1º Q</text><text x="26" y="24" opacity=".75">2º Q</text><text x="26" y="248" opacity=".75">3º Q</text><text x="224" y="248" opacity=".75">4º Q</text>
+</g></svg>
+<figcaption>O ponto \(P\) tem coordenadas \((\cos\theta,\sen\theta)\).</figcaption>
+</figure>
+<div class="fx">\[\tg\theta=\frac{\sen\theta}{\cos\theta}\qquad \sec\theta=\frac{1}{\cos\theta}\qquad \cossec\theta=\frac{1}{\sen\theta}\qquad \cotg\theta=\frac{\cos\theta}{\sen\theta}\]</div>
+<div class="scroll-x"><table>
+<thead><tr><th>\(\theta\)</th><th>\(0\)</th><th>\(\frac\pi6\)</th><th>\(\frac\pi4\)</th><th>\(\frac\pi3\)</th><th>\(\frac\pi2\)</th></tr></thead>
+<tbody>
+<tr><th>\(\sen\theta\)</th><td>\(0\)</td><td>\(\frac12\)</td><td>\(\frac{\sqrt2}{2}\)</td><td>\(\frac{\sqrt3}{2}\)</td><td>\(1\)</td></tr>
+<tr><th>\(\cos\theta\)</th><td>\(1\)</td><td>\(\frac{\sqrt3}{2}\)</td><td>\(\frac{\sqrt2}{2}\)</td><td>\(\frac12\)</td><td>\(0\)</td></tr>
+<tr><th>\(\tg\theta\)</th><td>\(0\)</td><td>\(\frac{\sqrt3}{3}\)</td><td>\(1\)</td><td>\(\sqrt3\)</td><td>∄</td></tr>
+</tbody></table></div>
+<p><b>Sinais por quadrante:</b> no 1º, tudo positivo; no 2º, só o seno; no 3º, só a tangente; no 4º, só o cosseno. Para ângulos fora do 1º quadrante, use o ângulo de referência e ajuste o sinal. Além disso, \(\cos(-x)=\cos x\) (par), \(\sen(-x)=-\sen x\) (ímpar), e ambos têm período \(2\pi\).</p>
+<h3>Identidades fundamentais</h3>
+<div class="fx">\[\sen^2x+\cos^2x=1\qquad 1+\tg^2x=\sec^2x\qquad 1+\cotg^2x=\cossec^2x\]</div>
+<p>A primeira é o Teorema de Pitágoras no ciclo. As outras duas saem dela dividindo por \(\cos^2x\) e por \(\sen^2x\).</p>
+<h3>Soma de arcos, arco duplo e rebaixamento</h3>
+<div class="fx">
+\[\sen(a\pm b)=\sen a\cos b\pm\sen b\cos a\qquad \cos(a\pm b)=\cos a\cos b\mp\sen a\sen b\]
+\[\sen2x=2\sen x\cos x\qquad \cos2x=\cos^2x-\sen^2x=2\cos^2x-1=1-2\sen^2x\]
+\[\sen^2x=\frac{1-\cos2x}{2}\qquad \cos^2x=\frac{1+\cos2x}{2}\]
+</div>
+<p>As fórmulas de <b>rebaixamento</b> (última linha) vêm de isolar \(\sen^2x\) e \(\cos^2x\) nas expressões de \(\cos2x\): trocam um quadrado por uma função de grau 1 no arco dobrado.</p>
+<div class="bridge"><b>Ponte para o Cálculo</b>Não há regra direta para integrar \(\sen^2x\); com o rebaixamento, integra-se \(\frac{1-\cos2x}{2}\) em uma linha. E o limite fundamental \(\lim_{x\to0}\frac{\sen x}{x}=1\) só vale em radianos.</div>
+<h3>Funções trigonométricas inversas</h3>
+<p>Seno, cosseno e tangente não são injetoras (repetem valores a cada período), portanto não têm inversa em todo o domínio. A saída é a do Módulo 5: <b>restringir o domínio</b> a um intervalo em que a função seja monótona e ainda assuma todos os seus valores. As inversas dessas restrições são:</p>
+<div class="scroll-x"><table>
+<thead><tr><th>Função</th><th>Definição</th><th>Domínio</th><th>Imagem</th></tr></thead>
+<tbody>
+<tr><th>\(y=\arcsin x\)</th><td>\(\sen y=x\) e \(-\frac\pi2\le y\le\frac\pi2\)</td><td>\([-1,1]\)</td><td>\(\left[-\frac\pi2,\frac\pi2\right]\)</td></tr>
+<tr><th>\(y=\arccos x\)</th><td>\(\cos y=x\) e \(0\le y\le\pi\)</td><td>\([-1,1]\)</td><td>\([0,\pi]\)</td></tr>
+<tr><th>\(y=\arctan x\)</th><td>\(\tg y=x\) e \(-\frac\pi2\lt y\lt\frac\pi2\)</td><td>\(\R\)</td><td>\(\left(-\frac\pi2,\frac\pi2\right)\)</td></tr>
+</tbody></table></div>
+<p>Leia “\(\arcsin x\)” como <em>o arco entre \(-\frac\pi2\) e \(\frac\pi2\) cujo seno é \(x\)</em>. A resposta de uma inversa é sempre um ângulo, e sempre dentro da imagem indicada. Exemplo: \(\arcsin\frac12=\frac\pi6\), embora \(\frac{5\pi}{6}\) também tenha seno \(\frac12\).</p>
+<div class="figs">
+<figure><svg viewBox="0 0 220 190" width="200" role="img" aria-label="Gráfico de arco seno" fill="none" stroke="currentColor" font-family="Inter, sans-serif" font-size="11">
+<line x1="14" y1="95" x2="206" y2="95" stroke-width="1" opacity=".5"/><line x1="110" y1="14" x2="110" y2="176" stroke-width="1" opacity=".5"/>
+<line x1="40" y1="35.3" x2="180" y2="35.3" stroke-dasharray="4 4" stroke-width="1" opacity=".5"/><line x1="40" y1="154.7" x2="180" y2="154.7" stroke-dasharray="4 4" stroke-width="1" opacity=".5"/>
+<polyline points="40.0,154.7 43.5,142.6 47.0,137.6 50.5,133.6 54.0,130.2 57.5,127.2 61.0,124.5 64.5,121.9 68.0,119.5 71.5,117.1 75.0,114.9 78.5,112.7 82.0,110.6 85.5,108.6 89.0,106.6 92.5,104.6 96.0,102.7 99.5,100.7 103.0,98.8 106.5,96.9 110.0,95.0 113.5,93.1 117.0,91.2 120.5,89.3 124.0,87.3 127.5,85.4 131.0,83.4 134.5,81.4 138.0,79.4 141.5,77.3 145.0,75.1 148.5,72.9 152.0,70.5 155.5,68.1 159.0,65.5 162.5,62.8 166.0,59.8 169.5,56.4 173.0,52.4 176.5,47.4 180.0,35.3" stroke="var(--accent)" stroke-width="2.2"/>
+<circle cx="40" cy="154.7" r="3.2" fill="var(--accent)" stroke="none"/><circle cx="180" cy="35.3" r="3.2" fill="var(--accent)" stroke="none"/>
+<g fill="currentColor" stroke="none"><text x="32" y="90">−1</text><text x="177" y="109">1</text><text x="116" y="32">π/2</text><text x="116" y="169">−π/2</text></g></svg>
+<figcaption>\(y=\arcsin x\)</figcaption></figure>
+<figure><svg viewBox="0 0 220 190" width="200" role="img" aria-label="Gráfico de arco cosseno" fill="none" stroke="currentColor" font-family="Inter, sans-serif" font-size="11">
+<line x1="14" y1="160" x2="206" y2="160" stroke-width="1" opacity=".5"/><line x1="110" y1="14" x2="110" y2="176" stroke-width="1" opacity=".5"/>
+<line x1="40" y1="40.6" x2="110" y2="40.6" stroke-dasharray="4 4" stroke-width="1" opacity=".5"/>
+<polyline points="40.0,40.6 43.5,52.7 47.0,57.8 50.5,61.7 54.0,65.1 57.5,68.1 61.0,70.8 64.5,73.4 68.0,75.9 71.5,78.2 75.0,80.4 78.5,82.6 82.0,84.7 85.5,86.7 89.0,88.7 92.5,90.7 96.0,92.7 99.5,94.6 103.0,96.5 106.5,98.4 110.0,100.3 113.5,102.2 117.0,104.1 120.5,106.0 124.0,108.0 127.5,109.9 131.0,111.9 134.5,113.9 138.0,115.9 141.5,118.0 145.0,120.2 148.5,122.4 152.0,124.8 155.5,127.2 159.0,129.8 162.5,132.5 166.0,135.5 169.5,138.9 173.0,142.9 176.5,147.9 180.0,160.0" stroke="var(--accent)" stroke-width="2.2"/>
+<circle cx="40" cy="40.6" r="3.2" fill="var(--accent)" stroke="none"/><circle cx="180" cy="160" r="3.2" fill="var(--accent)" stroke="none"/>
+<g fill="currentColor" stroke="none"><text x="32" y="175">−1</text><text x="177" y="175">1</text><text x="116" y="38">π</text><text x="116" y="96">π/2</text></g></svg>
+<figcaption>\(y=\arccos x\)</figcaption></figure>
+<figure><svg viewBox="0 0 220 190" width="200" role="img" aria-label="Gráfico de arco tangente com assíntotas horizontais" fill="none" stroke="currentColor" font-family="Inter, sans-serif" font-size="11">
+<line x1="14" y1="95" x2="206" y2="95" stroke-width="1" opacity=".5"/><line x1="110" y1="14" x2="110" y2="176" stroke-width="1" opacity=".5"/>
+<line x1="14" y1="35.3" x2="206" y2="35.3" stroke="var(--bad)" stroke-dasharray="5 4" stroke-width="1.3"/><line x1="14" y1="154.7" x2="206" y2="154.7" stroke="var(--bad)" stroke-dasharray="5 4" stroke-width="1.3"/>
+<polyline points="20.0,148.4 23.8,148.1 27.5,147.9 31.2,147.5 35.0,147.2 38.8,146.8 42.5,146.4 46.2,145.9 50.0,145.4 53.8,144.8 57.5,144.1 61.2,143.3 65.0,142.5 68.8,141.4 72.5,140.2 76.2,138.8 80.0,137.1 83.8,135.0 87.5,132.3 91.2,129.1 95.0,124.8 98.8,119.5 102.5,112.6 106.2,104.3 110.0,95.0 113.8,85.7 117.5,77.4 121.2,70.5 125.0,65.2 128.8,60.9 132.5,57.7 136.2,55.0 140.0,52.9 143.8,51.2 147.5,49.8 151.2,48.6 155.0,47.5 158.8,46.7 162.5,45.9 166.2,45.2 170.0,44.6 173.8,44.1 177.5,43.6 181.2,43.2 185.0,42.8 188.8,42.5 192.5,42.1 196.2,41.9 200.0,41.6" stroke="var(--accent)" stroke-width="2.2"/>
+<g fill="currentColor" stroke="none"><text x="116" y="30">π/2</text><text x="116" y="169">−π/2</text></g></svg>
+<figcaption>\(y=\arctan x\)</figcaption></figure>
+</div>
+<p><b>Leitura gráfica.</b> Cada gráfico é o reflexo, em relação à reta \(y=x\), do trecho restrito da função original.</p>
+<ul>
+<li>\(\arcsin\) é crescente e ímpar, de \(\left(-1,-\frac\pi2\right)\) a \(\left(1,\frac\pi2\right)\), passando pela origem.</li>
+<li>\(\arccos\) é decrescente, de \((-1,\pi)\) a \((1,0)\), e corta o eixo \(y\) em \(\frac\pi2\). Vale \(\arccos x=\frac\pi2-\arcsin x\).</li>
+<li>\(\arctan\) é crescente, ímpar e definida em toda a reta, com assíntotas horizontais \(y=\pm\frac\pi2\): os valores se aproximam de \(\frac\pi2\) sem nunca atingi-lo.</li>
+</ul>
+<div class="fx">\[\sen(\arcsin x)=x\ \text{ para } -1\le x\le1\qquad\qquad \arcsin(\sen\theta)=\theta\ \text{ somente se } -\tfrac\pi2\le\theta\le\tfrac\pi2\]</div>
+<div class="warn"><b>Erros clássicos com as inversas</b>
+<ul>
+<li>\(\sen^{-1}x\) (notação das calculadoras) significa \(\arcsin x\), e <em>não</em> \(\dfrac{1}{\sen x}\), que é \(\cossec x\).</li>
+<li>\(\arcsin(\sen\theta)\) nem sempre devolve \(\theta\): \(\arcsin\!\left(\sen\frac{5\pi}{6}\right)=\arcsin\frac12=\frac\pi6\).</li>
+<li>\(\arcsin2\) e \(\arccos(-3)\) não existem: o domínio é \([-1,1]\).</li>
+<li>Responder em graus: em Cálculo, o valor de uma inversa é sempre um número em radianos.</li>
+</ul></div>
+<div class="bridge"><b>Ponte para o Cálculo</b>As derivadas das inversas são funções algébricas: \((\arcsin x)'=\dfrac{1}{\sqrt{1-x^2}}\) e \((\arctan x)'=\dfrac{1}{1+x^2}\). Por isso elas surgem como resposta de integrais sem nenhuma trigonometria à vista, como \(\displaystyle\int\frac{dx}{1+x^2}=\arctan x+C\). E a assíntota de \(\arctan\) é o exemplo padrão de limite no infinito: \(\displaystyle\lim_{x\to+\infty}\arctan x=\frac\pi2\).</div>
+</div>
+
+<div class="sec" data-s="r">
+<article class="prob"><h4>Sabendo que \(\sen x=\frac35\) e que \(x\) está no 2º quadrante, calcule \(\cos x\), \(\tg x\) e \(\sen2x\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: identidade fundamental</span>
+\[\cos^2x=1-\frac{9}{25}=\frac{16}{25}\ \Rightarrow\ \cos x=-\frac45\quad\text{(negativo no 2º quadrante)}\]
+\[\tg x=\frac{3/5}{-4/5}=-\frac34\qquad \sen2x=2\cdot\frac35\cdot\left(-\frac45\right)=-\frac{24}{25}\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: triângulo de referência</span>
+<p>Seno \(\frac35\) sugere cateto oposto 3 e hipotenusa 5; por Pitágoras, o outro cateto é 4 (triângulo 3-4-5). No 2º quadrante a abscissa é negativa, então o ponto do ciclo é \(\left(-\frac45,\frac35\right)\). Lê-se diretamente \(\cos x=-\frac45\) e \(\tg x=-\frac34\); o arco duplo segue como antes.</p>
+</div>
+<p class="note">O triângulo dá os valores absolutos; o quadrante dá os sinais. Esquecer o sinal do quadrante é o erro mais comum.</p>
+</article>
+
+<article class="prob"><h4>Mostre que \(\dfrac{1-\cos2x}{\sen2x}=\tg x\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: fórmulas de arco duplo</span>
+<p>Escolha a versão de \(\cos2x\) que cancela o 1, isto é, \(\cos2x=1-2\sen^2x\):</p>
+\[\frac{1-(1-2\sen^2x)}{2\sen x\cos x}=\frac{2\sen^2x}{2\sen x\cos x}=\frac{\sen x}{\cos x}=\tg x\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: multiplicar pelo conjugado</span>
+\[\frac{1-\cos2x}{\sen2x}\cdot\frac{1+\cos2x}{1+\cos2x}=\frac{\sen^22x}{\sen2x\,(1+\cos2x)}=\frac{\sen2x}{1+\cos2x}=\frac{2\sen x\cos x}{2\cos^2x}=\tg x\]
+</div>
+<p class="note">A identidade vale onde os dois lados existem. Em B usamos \(1-\cos^22x=\sen^22x\) e \(1+\cos2x=2\cos^2x\); é o mesmo truque do conjugado do Módulo 2.</p>
+</article>
+
+<article class="prob"><h4>A 20 m da base de uma torre vertical, em terreno plano, o topo é visto sob um ângulo de \(60^\circ\) com o solo. Qual é a altura da torre?</h4>
+<div class="way"><span class="way-tag">Abordagem A: razão trigonométrica</span>
+<p>A altura \(h\) é o cateto oposto ao ângulo de \(60^\circ\); a distância de 20 m é o cateto adjacente. A razão que liga os dois é a tangente:</p>
+\[\tg60^\circ=\frac{h}{20}\ \Rightarrow\ h=20\sqrt3\approx34{,}6\ \text{m}\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: proporções do triângulo 30-60-90</span>
+<p>Nesse triângulo os lados estão na proporção \(1:\sqrt3:2\), com o menor cateto oposto a \(30^\circ\), isto é, adjacente a \(60^\circ\). O menor cateto mede 20, então o outro mede \(20\sqrt3\) e a linha de visada, \(40\) m.</p>
+</div>
+<p class="note">A abordagem B dispensa tabela e ainda entrega a hipotenusa. Antes de qualquer conta, identifique qual lado é oposto e qual é adjacente ao ângulo dado.</p>
+</article>
+
+<article class="prob"><h4>Calcule \(\cos\!\left(\arcsin\frac35\right)\) e escreva \(\cos(\arcsin x)\) sem funções trigonométricas.</h4>
+<div class="way"><span class="way-tag">Abordagem A: identidade fundamental</span>
+<p>Seja \(\theta=\arcsin\frac35\). Então \(\sen\theta=\frac35\) e \(\theta\in\left[-\frac\pi2,\frac\pi2\right]\), faixa em que o cosseno não é negativo:</p>
+\[\cos\theta=+\sqrt{1-\sen^2\theta}=\sqrt{1-\tfrac{9}{25}}=\frac45\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: triângulo de referência</span>
+<p>Desenhe um triângulo retângulo com ângulo \(\theta\), cateto oposto 3 e hipotenusa 5. Por Pitágoras, o cateto adjacente é 4, e lê-se \(\cos\theta=\frac45\).</p>
+</div>
+<p class="note">No caso geral, com cateto oposto \(x\) e hipotenusa 1, o adjacente é \(\sqrt{1-x^2}\): \(\cos(\arcsin x)=\sqrt{1-x^2}\). O sinal positivo vem da imagem de \(\arcsin\). Essa conversão de inversas em expressões algébricas é usada em toda substituição trigonométrica.</p>
+</article>
+</div>
+
+<div class="sec" data-s="f">
+<div class="ex"><p>Converta \(150^\circ\) para radianos e \(\dfrac{7\pi}{4}\) rad para graus.</p>
+<div class="sol">\[150\cdot\frac{\pi}{180}=\frac{5\pi}{6}\qquad \frac{7\pi}{4}\cdot\frac{180^\circ}{\pi}=315^\circ\]</div></div>
+<div class="ex"><p>Calcule \(\sen\frac{5\pi}{6}\), \(\cos\frac{4\pi}{3}\) e \(\tg\frac{3\pi}{4}\).</p>
+<div class="sol"><p>\(\frac{5\pi}{6}\) está no 2º quadrante, referência \(\frac\pi6\): \(\sen=\frac12\).<br>\(\frac{4\pi}{3}\) está no 3º quadrante, referência \(\frac\pi3\): \(\cos=-\frac12\).<br>\(\frac{3\pi}{4}\) está no 2º quadrante, referência \(\frac\pi4\): \(\tg=-1\).</p></div></div>
+<div class="ex"><p>Simplifique \((1-\sen^2x)\sec x\).</p>
+<div class="sol">\[\cos^2x\cdot\frac{1}{\cos x}=\cos x\]</div></div>
+<div class="ex"><p>Resolva \(2\sen x-1=0\) para \(0\le x\lt2\pi\).</p>
+<div class="sol"><p>\(\sen x=\frac12\). O seno é positivo no 1º e no 2º quadrantes:</p>\[x=\frac\pi6\quad\text{ou}\quad x=\pi-\frac\pi6=\frac{5\pi}{6}\]</div></div>
+<div class="ex"><p>Reescreva \(\sen^2(3x)\) sem potências.</p>
+<div class="sol"><p>Rebaixamento com arco \(3x\), cujo dobro é \(6x\):</p>\[\sen^2(3x)=\frac{1-\cos6x}{2}\]</div></div>
+<div class="ex"><p>Um triângulo retângulo tem catetos 5 e 12. Calcule a hipotenusa e o seno, o cosseno e a tangente do ângulo oposto ao cateto 5.</p>
+<div class="sol"><p>Hipotenusa: \(\sqrt{25+144}=13\). Para o ângulo \(\alpha\) oposto ao cateto 5:</p>\[\sen\alpha=\frac{5}{13}\qquad \cos\alpha=\frac{12}{13}\qquad \tg\alpha=\frac{5}{12}\]</div></div>
+<div class="ex"><p>Uma rampa de 10 m de comprimento forma \(30^\circ\) com o piso. Que altura ela vence?</p>
+<div class="sol"><p>O comprimento é a hipotenusa e a altura é o cateto oposto ao ângulo:</p>\[h=10\cdot\sen30^\circ=10\cdot\tfrac12=5\ \text{m}\]</div></div>
+<div class="ex"><p>Calcule \(\arcsin\frac12\), \(\arccos\!\left(-\frac12\right)\) e \(\arctan(-1)\).</p>
+<div class="sol"><p>Procure o ângulo <em>dentro da imagem</em> de cada função:</p>\[\arcsin\tfrac12=\frac\pi6\qquad \arccos\!\left(-\tfrac12\right)=\frac{2\pi}{3}\qquad \arctan(-1)=-\frac\pi4\]<p>Atenção ao último: \(\frac{3\pi}{4}\) também tem tangente \(-1\), mas está fora de \(\left(-\frac\pi2,\frac\pi2\right)\).</p></div></div>
+<div class="ex"><p>Calcule \(\arcsin\!\left(\sen\frac{5\pi}{6}\right)\).</p>
+<div class="sol"><p>Primeiro o seno: \(\sen\frac{5\pi}{6}=\frac12\). Depois o arco em \(\left[-\frac\pi2,\frac\pi2\right]\) com esse seno:</p>\[\arcsin\tfrac12=\frac\pi6\]<p>A resposta não é \(\frac{5\pi}{6}\), que está fora da imagem de \(\arcsin\).</p></div></div>
+</div>
+</section>
+
+<!-- ======================= MÓDULO 9 ======================= -->
+<section class="view" id="v-m9" hidden>
+<div class="sec" data-s="t">
+<p class="lead">A derivada é a inclinação de uma reta tangente. Todo o Cálculo Diferencial começa, portanto, com a pergunta mais simples da Geometria Analítica: qual é a inclinação desta reta?</p>
+<h3>Inclinação</h3>
+<div class="fx">\[m=\frac{\Delta y}{\Delta x}=\frac{y_2-y_1}{x_2-x_1}=\tg\alpha\]</div>
+<p>\(m\) diz quanto \(y\) varia para cada unidade de aumento em \(x\); \(\alpha\) é o ângulo que a reta faz com o eixo \(x\). Se \(m\gt0\) a reta sobe; se \(m\lt0\), desce; se \(m=0\), é horizontal. Retas verticais (\(x=k\)) não têm inclinação definida.</p>
+<h3>Equações da reta</h3>
+<div class="fx">\[y-y_0=m(x-x_0)\qquad\qquad y=mx+b\]</div>
+<p>A forma <b>ponto-inclinação</b> (à esquerda) é a mais útil em Cálculo: conhecendo um ponto \((x_0,y_0)\) e a inclinação, a equação sai sem resolver sistema algum. A forma reduzida (à direita) exibe o coeficiente linear \(b\), onde a reta corta o eixo \(y\).</p>
+<h3>Paralelismo e perpendicularismo</h3>
+<div class="fx">\[r\parallel s\iff m_r=m_s\qquad\qquad r\perp s\iff m_r\cdot m_s=-1\]</div>
+<p>Para retas não verticais. A inclinação da perpendicular é o <em>oposto do inverso</em>: se \(m_r=\frac23\), então \(m_s=-\frac32\).</p>
+<h3>Taxa de variação média</h3>
+<p>Para uma função qualquer, a taxa de variação média em \([a,b]\) é a inclinação da <b>reta secante</b> que passa por \((a,f(a))\) e \((b,f(b))\):</p>
+<div class="fx">\[\text{TVM}=\frac{f(b)-f(a)}{b-a}\qquad\text{ou, com } b=a+h:\qquad \frac{f(a+h)-f(a)}{h}\]</div>
+<figure>
+<svg viewBox="0 0 320 220" width="340" role="img" aria-label="Curva com reta secante pelos pontos A e B, destacando delta x e delta y" fill="none" stroke="currentColor" font-family="Inter, sans-serif" font-size="12">
+<line x1="24" y1="200" x2="306" y2="200" stroke-width="1" opacity=".5"/><line x1="32" y1="10" x2="32" y2="208" stroke-width="1" opacity=".5"/>
+<path d="M40,190 Q165,190 290,2.5" stroke-width="2"/>
+<line x1="80" y1="206.8" x2="295" y2="13.3" stroke="var(--accent)" stroke-width="1.8"/>
+<line x1="120" y1="170.8" x2="260" y2="170.8" stroke-dasharray="5 4" stroke-width="1.2"/>
+<line x1="260" y1="170.8" x2="260" y2="44.8" stroke="var(--bad)" stroke-dasharray="5 4" stroke-width="1.6"/>
+<circle cx="120" cy="170.8" r="4" fill="currentColor"/><circle cx="260" cy="44.8" r="4" fill="currentColor"/>
+<g fill="currentColor" stroke="none">
+<text x="104" y="162">A</text><text x="244" y="40">B</text>
+<text x="180" y="188">Δx = h</text><text x="266" y="112" fill="var(--bad)">Δy</text>
+<text x="150" y="112" fill="var(--accent)">secante</text><text x="78" y="182">y = f(x)</text>
+</g></svg>
+<figcaption>A inclinação da secante é \(\Delta y/\Delta x\). Quando \(h\to0\), \(B\) desliza até \(A\) e a secante vira tangente.</figcaption>
+</figure>
+<div class="bridge"><b>Ponte para o Cálculo</b>A derivada é o limite da taxa de variação média: \(f'(a)=\displaystyle\lim_{h\to0}\frac{f(a+h)-f(a)}{h}\). E a reta tangente em \(x=a\) é escrita na forma ponto-inclinação: \(y-f(a)=f'(a)(x-a)\).</div>
+</div>
+
+<div class="sec" data-s="r">
+<article class="prob"><h4>Determine a equação da reta que passa por \(A(1,2)\) e \(B(3,8)\).</h4>
+<div class="way"><span class="way-tag">Abordagem A: ponto-inclinação</span>
+\[m=\frac{8-2}{3-1}=3\qquad y-2=3(x-1)\ \Rightarrow\ y=3x-1\]
+</div>
+<div class="way"><span class="way-tag">Abordagem B: sistema na forma reduzida</span>
+<p>Substituindo os dois pontos em \(y=mx+b\):</p>
+\[\begin{cases}2=m+b\\ 8=3m+b\end{cases}\ \Rightarrow\ 2m=6\ \Rightarrow\ m=3,\quad b=-1\]
+</div>
+<p class="note">Conferência com o ponto \(B\): \(3\cdot3-1=8\). A abordagem A é mais curta e é a que se usa para retas tangentes.</p>
+</article>
+
+<article class="prob"><h4>Calcule a taxa de variação média de \(f(x)=x^2\) entre \(x=1\) e \(x=3\) e escreva a equação da reta secante.</h4>
+<div class="way"><span class="way-tag">Abordagem A: direto pela definição</span>
+\[\text{TVM}=\frac{f(3)-f(1)}{3-1}=\frac{9-1}{2}=4\]
+<p>Secante por \((1,1)\) com \(m=4\): \(y-1=4(x-1)\Rightarrow y=4x-3\).</p>
+</div>
+<div class="way"><span class="way-tag">Abordagem B: quociente geral, depois substituir</span>
+<p>Para \(x\) e \(h\ne0\) quaisquer:</p>
+\[\frac{(x+h)^2-x^2}{h}=\frac{2xh+h^2}{h}=2x+h\]
+<p>Com \(x=1\) e \(h=2\): \(2\cdot1+2=4\). Mesmo valor.</p>
+</div>
+<p class="note">A fórmula geral \(2x+h\) mostra o que acontece quando \(h\to0\): a inclinação tende a \(2x\), que é a derivada de \(x^2\). Em \(x=1\), a tangente tem inclinação 2, metade da secante calculada.</p>
+</article>
+</div>
+
+<div class="sec" data-s="f">
+<div class="ex"><p>Escreva a equação da reta que passa por \((2,-1)\) e tem inclinação \(-2\).</p>
+<div class="sol">\[y-(-1)=-2(x-2)\ \Rightarrow\ y=-2x+3\]</div></div>
+<div class="ex"><p>Determine a reta paralela a \(y=3x+5\) que passa por \((0,-4)\).</p>
+<div class="sol"><p>Paralela: mesma inclinação, \(m=3\). O ponto dado está no eixo \(y\), logo \(b=-4\):</p>\[y=3x-4\]</div></div>
+<div class="ex"><p>Determine a reta perpendicular a \(2x+y=7\) que passa por \((4,1)\).</p>
+<div class="sol"><p>A reta dada é \(y=-2x+7\), com \(m=-2\). A perpendicular tem \(m=\frac12\):</p>\[y-1=\tfrac12(x-4)\ \Rightarrow\ y=\tfrac x2-1\]</div></div>
+<div class="ex"><p>Calcule a taxa de variação média de \(f(x)=\dfrac1x\) no intervalo \([1,4]\).</p>
+<div class="sol">\[\frac{f(4)-f(1)}{4-1}=\frac{\frac14-1}{3}=\frac{-\frac34}{3}=-\frac14\]<p>Negativa: a função decresce no intervalo.</p></div></div>
+<div class="ex"><p>Para \(f(x)=x^2+x\), simplifique \(\dfrac{f(2+h)-f(2)}{h}\), com \(h\ne0\).</p>
+<div class="sol">\[\frac{(2+h)^2+(2+h)-6}{h}=\frac{4+4h+h^2+2+h-6}{h}=\frac{5h+h^2}{h}=5+h\]<p>Quando \(h\to0\), o resultado tende a 5: é \(f'(2)\).</p></div></div>
+</div>
+</section>
+
+      <section class="view" id="v-g1" hidden></section>
+      <section class="view" id="v-g2" hidden></section>
+      <section class="view" id="v-g3" hidden></section>
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+'use strict';
+const R = String.raw;
+/* Q(enunciado, [alternativas], justificativa, módulo). A PRIMEIRA alternativa é sempre a correta;
+   a ordem é embaralhada a cada exibição. */
+const Q = (q, o, e, m) => ({ q, o, e, m });
+
+/* =================== DADOS =================== */
+const MODS = [
+  { n: 0, opt: true, t: 'Nivelamento Fundamental', s: 'Opcional, para quem quer revisar a base do Ensino Fundamental: conjuntos numéricos, axiomas de corpo, regras de sinal e de cancelamento, fatores primos, MDC e MMC.' },
+  { n: 1, t: 'Potências, Raízes e Frações Algébricas', s: 'Aritmética avançada, expoentes negativos e fracionários, radiciação e frações algébricas.' },
+  { n: 2, t: 'Produtos Notáveis, Fatoração e Racionalização', s: 'Produtos notáveis, técnicas de fatoração, divisão de polinômios (chave e Briot-Ruffini) e racionalização de denominadores e numeradores.' },
+  { n: 3, t: 'Equações e Inequações', s: 'Equações do 1º e do 2º grau, completamento de quadrados, equações redutíveis a quadráticas, equações irracionais e o método do varal de sinais.' },
+  { n: 4, t: 'Função Modular', s: 'Definição por partes, propriedades e inequações modulares do tipo |x − a| menor que δ.' },
+  { n: 5, t: 'Teoria Geral de Funções', s: 'Definição, paridade, composição f(g(x)) e funções inversas.' },
+  { n: 6, t: 'Domínio e Imagem', s: 'As quatro restrições fundamentais: denominadores, raízes pares, logaritmandos e trigonometria descontínua.' },
+  { n: 7, t: 'Funções Exponenciais e Logarítmicas', s: 'Propriedades operatórias, a base natural e, ln x e equações transcendentais.' },
+  { n: 8, t: 'Trigonometria Analítica', s: 'Triângulo retângulo, graus e radianos, razões no ciclo, identidades fundamentais, arco duplo, rebaixamento e funções trigonométricas inversas.' },
+  { n: 9, t: 'Geometria Analítica Básica', s: 'Equação ponto-inclinação, paralelismo, perpendicularismo e taxa de variação média.' }
+];
+const CORE = MODS.filter(m => !m.opt);
+
+const FLASH = {
+m0: [
+  Q(R`O número \(\sqrt2\) pertence a qual conjunto?`, [`Aos reais, mas não aos racionais`, `Aos racionais`, `Aos inteiros`, `A nenhum conjunto numérico`], R`\(\sqrt2\) é irracional: sua representação decimal é infinita e não periódica, e não existe fração de inteiros igual a ele.`),
+  Q(R`Se \(a\cdot b=0\), pode-se concluir que:`, [R`\(a=0\) ou \(b=0\)`, R`\(a=0\) e \(b=0\), obrigatoriamente`, R`\(a=b\)`, R`\(a=-b\)`], R`É a lei do anulamento do produto: um produto de números reais só é zero se pelo menos um fator for zero. Ela sustenta a resolução de equações por fatoração.`),
+  Q(`Para calcular o MMC a partir das decomposições em fatores primos, tomam-se:`, [`todos os fatores que aparecem, com os maiores expoentes`, `apenas os fatores comuns, com os menores expoentes`, `apenas os fatores comuns, com os maiores expoentes`, `todos os fatores que aparecem, com os menores expoentes`], `Um múltiplo comum precisa conter cada fator primo na maior potência em que ele ocorre. Fatores comuns com os menores expoentes dão o MDC.`),
+  Q(R`Por que não se pode “cortar” o \(a\) em \(\dfrac{a+b}{a}\)?`, [`Porque no numerador o a é parcela de uma soma, e só fatores se cancelam`, `Porque a pode ser negativo`, `Porque b pode ser zero`, `Pode-se cortar, e o resultado é b`], R`Cancelar é dividir numerador e denominador pelo mesmo fator. O correto aqui é \(\dfrac{a+b}{a}=1+\dfrac ba\).`),
+  Q(R`A dízima periódica \(0{,}333\ldots\) é um número:`, [`racional`, `irracional`, `inteiro`, `natural`], R`Toda dízima periódica é racional: \(0{,}333\ldots=\frac13\). Irracionais têm representação decimal infinita e <em>não</em> periódica.`)
+],
+m1: [
+  Q(R`Para \(a\ne0\), quanto vale \(a^0\)?`, [R`\(1\)`, R`\(0\)`, R`\(a\)`, `Não está definido`], R`Pela lei do quociente, \(\dfrac{a^n}{a^n}=a^{n-n}=a^0\); como a fração vale 1, \(a^0=1\).`),
+  Q(R`Para todo número real \(x\), \(\sqrt{x^2}\) é igual a:`, [R`\(|x|\)`, R`\(x\)`, R`\(\pm x\)`, R`\(x^2\)`], R`O símbolo de raiz quadrada indica sempre a raiz não negativa. Se \(x\) for negativo, \(\sqrt{x^2}=-x=|x|\).`),
+  Q(R`Em \(\dfrac{x+5}{x}\), é correto “cortar” o \(x\)?`, [`Não: só se cancelam fatores comuns, e aqui o x do numerador é parcela`, `Sim, e o resultado é 5`, `Sim, e o resultado é 6`, `Sim, desde que x seja positivo`], R`Cancelar é dividir numerador e denominador pelo mesmo fator. Em \(x+5\), o \(x\) está somando; o correto é \(\frac{x+5}{x}=1+\frac5x\).`),
+  Q(R`Quanto vale \(-3^2\)?`, [R`\(-9\)`, R`\(9\)`, R`\(-6\)`, R`\(6\)`], R`A potenciação tem prioridade sobre o sinal: \(-3^2=-(3^2)=-9\). Para obter 9 é preciso escrever \((-3)^2\).`)
+],
+m2: [
+  Q(R`O desenvolvimento de \((a+b)^2\) é:`, [R`\(a^2+2ab+b^2\)`, R`\(a^2+b^2\)`, R`\(a^2+ab+b^2\)`, R`\(2a+2b\)`], R`\((a+b)(a+b)=a^2+ab+ba+b^2\). O termo \(2ab\) corresponde aos dois retângulos do quadrado de lado \(a+b\).`),
+  Q(R`O conjugado de \(\sqrt{x}-2\) é:`, [R`\(\sqrt{x}+2\)`, R`\(-\sqrt{x}-2\)`, R`\(2-\sqrt{x}\)`, R`\(\dfrac{1}{\sqrt{x}-2}\)`], R`O conjugado troca apenas o sinal entre os dois termos. O produto \((\sqrt x-2)(\sqrt x+2)=x-4\) não tem mais raiz.`),
+  Q(R`Nos números reais, a expressão \(a^2+b^2\):`, [`não se fatora em fatores do 1º grau`, R`é igual a \((a+b)^2\)`, R`é igual a \((a+b)(a-b)\)`, R`é igual a \((a-b)^2\)`], R`\((a+b)(a-b)\) dá a <em>diferença</em> \(a^2-b^2\), e \((a\pm b)^2\) contém o termo \(\pm2ab\). A soma de quadrados é irredutível nos reais.`),
+  Q(`Por que multiplicar pelo conjugado elimina a raiz?`, [`Porque gera uma diferença de quadrados, e o quadrado desfaz a raiz`, `Porque o conjugado é o inverso da raiz`, `Porque a raiz de uma soma é a soma das raízes`, `Porque o conjugado vale sempre 1`], R`\((\sqrt a-\sqrt b)(\sqrt a+\sqrt b)=(\sqrt a)^2-(\sqrt b)^2=a-b\). Os termos cruzados se cancelam.`),
+  Q(R`O resto da divisão de um polinômio \(P(x)\) por \(x-a\) é:`, [R`\(P(a)\)`, R`\(P(-a)\)`, R`\(P(0)\)`, R`sempre zero`], R`Teorema do resto: em \(P(x)=(x-a)Q(x)+r\), fazendo \(x=a\) o primeiro termo se anula e sobra \(r=P(a)\).`),
+  Q(R`No dispositivo de Briot-Ruffini, para dividir por \(x+2\) escreve-se à esquerda:`, [R`\(-2\)`, R`\(2\)`, R`\(\dfrac12\)`, R`\(0\)`], R`O dispositivo usa a raiz do divisor: \(x+2=x-(-2)\), cuja raiz é \(-2\).`),
+  Q(R`Se \(P(3)=0\), então:`, [R`\(x-3\) é fator de \(P(x)\)`, R`\(x+3\) é fator de \(P(x)\)`, R`\(P(x)\) tem grau 3`, R`o termo independente de \(P\) é 3`], R`Teorema de D'Alembert: \(P(a)=0\) equivale a \(P(x)\) ser divisível por \(x-a\). É isso que permite cancelar o fator causador de \(\frac00\) em limites.`)
+],
+m3: [
+  Q(R`Se \(\Delta\lt0\) em \(ax^2+bx+c=0\), a equação tem:`, [`nenhuma raiz real`, `uma raiz real dupla`, `duas raízes reais distintas`, `infinitas raízes`], R`A fórmula exige \(\sqrt\Delta\), que não é real quando \(\Delta\lt0\). Graficamente, a parábola não toca o eixo \(x\).`),
+  Q(`Ao multiplicar os dois lados de uma inequação por um número negativo:`, [`o sentido da desigualdade se inverte`, `o sentido se mantém`, `a inequação vira uma equação`, `a inequação deixa de ter solução`], R`Exemplo: \(2\lt3\), mas \(-2\gt-3\). Multiplicar por negativo espelha os números em relação ao zero e troca a ordem.`),
+  Q(R`O vértice da parábola \(y=(x-2)^2+3\) é:`, [R`\((2,\,3)\)`, R`\((-2,\,3)\)`, R`\((2,\,-3)\)`, R`\((3,\,2)\)`], R`Na forma canônica \(a(x-h)^2+k\), o vértice é \((h,k)\). O quadrado é mínimo (zero) quando \(x=2\), e então \(y=3\).`),
+  Q(R`Por que não se pode “multiplicar cruzado” em \(\dfrac1x\lt2\)?`, [`Porque o sinal de x é desconhecido, e se x for negativo a desigualdade se inverte`, `Porque x pode ser uma fração`, `Porque 2 não é uma fração`, `Pode-se multiplicar cruzado sem problema algum`], R`Multiplicar por \(x\) só preserva o sentido se \(x\gt0\). O caminho seguro é passar tudo para um lado e usar o varal de sinais.`),
+  Q(`Elevar os dois lados de uma equação ao quadrado pode:`, [`introduzir raízes estranhas, por isso é obrigatório verificar`, `fazer perder soluções verdadeiras`, `inverter o sentido da igualdade`, `nada alterar: é sempre uma equivalência`], R`\(a^2=b^2\) equivale a \(a=b\) ou \(a=-b\). O quadrado acrescenta as soluções da equação com o sinal trocado, mas não elimina nenhuma verdadeira.`),
+  Q(R`Na biquadrada, com \(y=x^2\), uma solução \(y\lt0\):`, [`não gera nenhuma raiz real`, `gera duas raízes reais`, `gera uma raiz real negativa`, `gera uma raiz real dupla`], R`\(x^2\) nunca é negativo para \(x\) real. Só valores \(y\ge0\) retornam raízes: \(x=\pm\sqrt y\).`),
+  Q(R`A equação \(0\cdot x=5\) tem:`, [`nenhuma solução`, `uma única solução`, `infinitas soluções`, R`a solução \(x=0\)`], R`Qualquer número multiplicado por zero dá zero, nunca 5. Já \(0\cdot x=0\) seria uma identidade, verdadeira para todo \(x\).`)
+],
+m4: [
+  Q(R`Geometricamente, \(|x-a|\) representa:`, [R`a distância entre \(x\) e \(a\) na reta real`, R`o ponto médio entre \(x\) e \(a\)`, R`o valor de \(x-a\) sem alteração`, R`a soma de \(x\) com \(a\)`], R`O módulo de uma diferença é a distância entre os dois números, sempre não negativa: \(|5-2|=|2-5|=3\).`),
+  Q(R`A inequação \(|x|\lt3\) equivale a:`, [R`\(-3\lt x\lt3\)`, R`\(x\lt3\)`, R`\(x\lt-3\) ou \(x\gt3\)`, R`\(x\lt\pm3\)`], R`São os pontos a menos de 3 unidades da origem: o intervalo aberto \((-3,3)\).`),
+  Q(R`Quantas soluções reais tem \(|x|=-2\)?`, [`Nenhuma`, `Uma`, `Duas`, `Infinitas`], R`O módulo é uma distância, logo \(|x|\ge0\) para todo \(x\). Ele nunca pode valer \(-2\).`),
+  Q(R`A propriedade \(|a+b|\le|a|+|b|\) chama-se:`, [`desigualdade triangular`, `propriedade distributiva`, `teorema de Pitágoras`, `propriedade comutativa`], R`Ela afirma que o módulo da soma não ultrapassa a soma dos módulos; a igualdade ocorre quando \(a\) e \(b\) têm o mesmo sinal. É a ferramenta básica das provas com \(\varepsilon\) e \(\delta\).`)
+],
+m5: [
+  Q(`O gráfico de uma função par é simétrico em relação:`, [`ao eixo y`, `à origem`, `ao eixo x`, `à reta y = x`], R`\(f(-x)=f(x)\) significa que \(x\) e \(-x\) têm a mesma altura: o lado esquerdo é o espelho do direito.`),
+  Q(R`A notação \(f^{-1}(x)\) indica:`, [R`a função inversa de \(f\)`, R`\(\dfrac{1}{f(x)}\)`, R`\(-f(x)\)`, R`\(f(-x)\)`], R`O \(-1\) aqui não é expoente: indica a função que desfaz \(f\). O inverso multiplicativo se escreve \([f(x)]^{-1}\) ou \(\frac{1}{f(x)}\).`),
+  Q(`Para admitir função inversa, uma função precisa ser:`, [`injetora`, `par`, `positiva`, `polinomial`], R`Se dois valores de \(x\) dessem o mesmo \(y\), a inversa não saberia para qual voltar. É o teste da reta horizontal.`),
+  Q(R`Em \((f\circ g)(x)\), qual função é aplicada primeiro?`, [R`\(g\), a função de dentro`, R`\(f\), a função de fora`, `As duas ao mesmo tempo`, `Tanto faz, o resultado é o mesmo`], R`\((f\circ g)(x)=f(g(x))\): calcula-se \(g(x)\) e o resultado entra em \(f\). A ordem importa, pois em geral \(f\circ g\ne g\circ f\).`)
+],
+m6: [
+  Q(R`Para que \(\ln u\) esteja definido nos reais, é preciso:`, [R`\(u\gt0\)`, R`\(u\ge0\)`, R`\(u\ne0\)`, R`\(u\gt1\)`], R`\(\ln u\) é o expoente \(y\) tal que \(e^y=u\). Como \(e^y\) é sempre positivo, \(u\) tem de ser estritamente positivo; \(\ln0\) não existe.`),
+  Q(R`Para que \(\sqrt{u}\) esteja definida nos reais, é preciso:`, [R`\(u\ge0\)`, R`\(u\gt0\)`, R`\(u\ne0\)`, `nenhuma condição`], R`Nenhum real ao quadrado é negativo. O zero é permitido: \(\sqrt0=0\).`),
+  Q(R`\(\tg x\) não está definida quando:`, [R`\(\cos x=0\)`, R`\(\sen x=0\)`, R`\(x=0\)`, R`\(\tg x=0\)`], R`\(\tg x=\frac{\sen x}{\cos x}\): o problema é o denominador. Isso ocorre em \(x=\frac\pi2+k\pi\).`),
+  Q(`Quando uma função tem várias restrições, o domínio é:`, [`a interseção das condições`, `a união das condições`, `apenas a condição mais restritiva da raiz`, `sempre o conjunto dos reais`], `Todas as condições precisam valer ao mesmo tempo para a expressão existir; isso é interseção.`),
+  Q(R`A raiz cúbica \(\sqrt[3]{u}\) exige que:`, [`nada: está definida para todo u real`, R`\(u\ge0\)`, R`\(u\gt0\)`, R`\(u\ne0\)`], R`Índice ímpar aceita radicando negativo: \(\sqrt[3]{-8}=-2\), pois \((-2)^3=-8\).`)
+],
+m7: [
+  Q(R`Quanto vale \(\ln1\)?`, [R`\(0\)`, R`\(1\)`, R`\(e\)`, `Não existe`], R`\(\ln1\) é o expoente a que se eleva \(e\) para obter 1, e \(e^0=1\).`),
+  Q(R`Para \(a,b\gt0\), \(\ln(ab)\) é igual a:`, [R`\(\ln a+\ln b\)`, R`\(\ln a\cdot\ln b\)`, R`\(b\ln a\)`, R`\(\ln(a+b)\)`], R`Ao multiplicar potências de mesma base somam-se os expoentes; como logaritmos são expoentes, o log do produto é a soma dos logs.`),
+  Q(R`Para \(x\gt0\), \(e^{\ln x}\) é igual a:`, [R`\(x\)`, R`\(\ln x\)`, R`\(e^x\)`, R`\(1\)`], R`\(e^x\) e \(\ln x\) são funções inversas: uma desfaz a outra.`),
+  Q(R`Existe \(x\) real tal que \(e^x\le0\)?`, [`Não: a exponencial é sempre positiva`, R`Sim, para \(x\) negativo`, R`Sim, em \(x=0\)`, R`Sim, para \(x\) muito grande`], R`Para \(x\) negativo, \(e^x=\frac{1}{e^{|x|}}\) é pequeno, mas positivo. A imagem de \(e^x\) é \((0,+\infty)\).`)
+],
+m8: [
+  Q(R`\(\pi\) radianos correspondem a:`, [R`\(180^\circ\)`, R`\(360^\circ\)`, R`\(90^\circ\)`, R`\(3{,}14^\circ\)`], R`A volta completa mede \(2\pi\) rad \(=360^\circ\); meia volta é \(\pi\) rad \(=180^\circ\).`),
+  Q(R`No ciclo trigonométrico, \(\cos\theta\) é:`, [`a abscissa (coordenada x) do ponto`, `a ordenada (coordenada y) do ponto`, `o comprimento do arco`, `a inclinação do raio`], R`O ponto associado a \(\theta\) é \((\cos\theta,\sen\theta)\). A inclinação do raio é a tangente.`),
+  Q(R`Para todo \(x\) real, \(\sen^2x+\cos^2x\) vale:`, [R`\(1\)`, R`\(0\)`, R`\(2\)`, R`\(\sen2x\)`], R`É o Teorema de Pitágoras aplicado ao ponto \((\cos x,\sen x)\), que está sempre a distância 1 da origem.`),
+  Q(`No 3º quadrante:`, [`seno e cosseno são negativos; a tangente é positiva`, `seno é positivo; cosseno e tangente são negativos`, `todas as razões são negativas`, `cosseno é positivo; seno e tangente são negativos`], `No 3º quadrante as duas coordenadas são negativas; a tangente, quociente de dois negativos, é positiva.`),
+  Q(`Em um triângulo retângulo, o seno de um ângulo agudo é a razão entre:`, [`o cateto oposto e a hipotenusa`, `o cateto adjacente e a hipotenusa`, `o cateto oposto e o cateto adjacente`, `a hipotenusa e o cateto oposto`], `Seno: oposto sobre hipotenusa. Cosseno: adjacente sobre hipotenusa. Tangente: oposto sobre adjacente.`),
+  Q(R`A imagem de \(y=\arctan x\) é:`, [R`\(\left(-\frac\pi2,\frac\pi2\right)\)`, R`\(\left[-\frac\pi2,\frac\pi2\right]\)`, R`\([0,\pi]\)`, R`\(\R\)`], R`A tangente foi restrita ao intervalo aberto \(\left(-\frac\pi2,\frac\pi2\right)\), onde é crescente. Os extremos não entram: são as assíntotas horizontais de \(\arctan\).`),
+  Q(R`A notação \(\sen^{-1}x\) indica:`, [R`\(\arcsin x\)`, R`\(\dfrac{1}{\sen x}\)`, R`\(\cossec x\)`, R`\(-\sen x\)`], R`O \(-1\) é o símbolo de função inversa, como em \(f^{-1}\). O inverso multiplicativo \(\frac{1}{\sen x}\) é a cossecante.`)
+],
+m9: [
+  Q(`A inclinação de uma reta mede:`, [`quanto y varia para cada unidade de aumento em x`, `a distância da reta à origem`, `o ponto onde a reta corta o eixo y`, `o comprimento da reta`], R`\(m=\frac{\Delta y}{\Delta x}\) é uma taxa de variação. O ponto de corte com o eixo \(y\) é o coeficiente linear \(b\).`),
+  Q(`Duas retas não verticais são paralelas quando:`, [`têm a mesma inclinação`, `o produto das inclinações é −1`, `têm o mesmo coeficiente linear`, `as inclinações são opostas`], `Mesma inclinação significa mesma direção. Se, além disso, tiverem o mesmo coeficiente linear, são coincidentes.`),
+  Q(`Duas retas não verticais são perpendiculares quando:`, [R`\(m_1\cdot m_2=-1\)`, R`\(m_1=m_2\)`, R`\(m_1+m_2=0\)`, R`\(m_1\cdot m_2=1\)`], R`Cada inclinação é o oposto do inverso da outra, como \(2\) e \(-\frac12\).`),
+  Q(R`A taxa de variação média de \(f\) em \([a,b]\) é, geometricamente:`, [`a inclinação da reta secante pelos extremos`, `a inclinação da reta tangente em a`, `a área sob o gráfico`, `o comprimento do gráfico`], R`\(\frac{f(b)-f(a)}{b-a}\) é \(\Delta y/\Delta x\) entre dois pontos do gráfico. A tangente só aparece no limite, quando \(b\to a\).`)
+]
+};
+
+const EXAM = {
+m0: [
+  Q(R`A expressão \(-(a-b)\) é igual a:`, [R`\(b-a\)`, R`\(-a-b\)`, R`\(a-b\)`, R`\(a+b\)`], R`O sinal de menos multiplica as duas parcelas por \(-1\): \(-a+b=b-a\).`),
+  Q(R`O MMC de 12, 18 e 30 é:`, [R`\(180\)`, R`\(6\)`, R`\(360\)`, R`\(90\)`], R`\(12=2^2\cdot3\), \(18=2\cdot3^2\), \(30=2\cdot3\cdot5\). Maiores expoentes: \(2^2\cdot3^2\cdot5=180\). O 6 é o MDC.`),
+  Q(R`O MDC de 48 e 72 é:`, [R`\(24\)`, R`\(12\)`, R`\(144\)`, R`\(6\)`], R`\(48=2^4\cdot3\) e \(72=2^3\cdot3^2\). Fatores comuns com os menores expoentes: \(2^3\cdot3=24\). O 144 é o MMC.`),
+  Q(R`O valor de \(\dfrac34-\dfrac56\) é:`, [R`\(-\dfrac{1}{12}\)`, R`\(-1\)`, R`\(\dfrac{1}{12}\)`, R`\(-\dfrac15\)`], R`MMC de 4 e 6 é 12: \(\dfrac{9}{12}-\dfrac{10}{12}=-\dfrac{1}{12}\). Não se subtraem numeradores e denominadores separadamente.`),
+  Q(`Qual afirmação é verdadeira?`, [`Todo número inteiro é racional`, `Todo número real é racional`, `Toda dízima periódica é irracional`, `A soma de dois irracionais é sempre irracional`], R`Todo inteiro \(n\) é a fração \(\frac n1\). As demais são falsas: \(\sqrt2\) é real e não racional; dízimas periódicas são racionais; e \(\sqrt2+(-\sqrt2)=0\).`)
+],
+m1: [
+  Q(R`O valor de \(\left(2^{-1}+2^{-2}\right)^{-1}\) é:`, [R`\(\dfrac43\)`, R`\(6\)`, R`\(\dfrac34\)`, R`\(8\)`], R`\(2^{-1}+2^{-2}=\frac12+\frac14=\frac34\), e o inverso de \(\frac34\) é \(\frac43\). O expoente \(-1\) não se distribui sobre a soma.`),
+  Q(R`Para \(x\gt0\), \(\sqrt[3]{x}\cdot\sqrt{x}\) é igual a:`, [R`\(x^{5/6}\)`, R`\(x^{1/6}\)`, R`\(x^{2/5}\)`, R`\(x^{1/5}\)`], R`\(x^{1/3}\cdot x^{1/2}=x^{\frac13+\frac12}=x^{5/6}\). No produto de potências de mesma base, somam-se os expoentes.`),
+  Q(R`Para \(x\ne0\) e \(x\ne2\), \(\dfrac{x^2-4}{x^2-2x}\) simplifica para:`, [R`\(\dfrac{x+2}{x}\)`, R`\(\dfrac{2}{x}\)`, R`\(\dfrac{x-2}{x}\)`, R`\(2\)`], R`\(\dfrac{(x-2)(x+2)}{x(x-2)}=\dfrac{x+2}{x}\). É preciso fatorar antes de cancelar.`),
+  Q(R`Qual igualdade é verdadeira para quaisquer \(a,b\gt0\)?`, [R`\(\sqrt{ab}=\sqrt a\,\sqrt b\)`, R`\(\sqrt{a+b}=\sqrt a+\sqrt b\)`, R`\((a+b)^2=a^2+b^2\)`, R`\(\dfrac{1}{a+b}=\dfrac1a+\dfrac1b\)`], R`A raiz distribui-se sobre o produto. As outras três falham, por exemplo, com \(a=b=1\).`),
+  Q(R`A soma \(\dfrac1x+\dfrac{1}{x+1}\) é igual a:`, [R`\(\dfrac{2x+1}{x(x+1)}\)`, R`\(\dfrac{2}{2x+1}\)`, R`\(\dfrac{1}{x(x+1)}\)`, R`\(\dfrac{2}{x(x+1)}\)`], R`Denominador comum \(x(x+1)\): \(\dfrac{(x+1)+x}{x(x+1)}=\dfrac{2x+1}{x(x+1)}\). Nunca se somam denominadores.`)
+],
+m2: [
+  Q(R`\((x+3)(x-3)-(x-3)^2\) é igual a:`, [R`\(6x-18\)`, R`\(-18\)`, R`\(6x\)`, R`\(2x^2-6x\)`], R`\((x^2-9)-(x^2-6x+9)=6x-18\). O sinal de menos atinge os três termos do quadrado.`),
+  Q(R`A fatoração completa de \(2x^2-8\) é:`, [R`\(2(x-2)(x+2)\)`, R`\(2(x-4)(x+4)\)`, R`\(2(x-2)^2\)`, R`\((2x-8)(x+1)\)`], R`Fator comum primeiro: \(2(x^2-4)\); depois, diferença de quadrados: \(2(x-2)(x+2)\).`),
+  Q(R`Racionalizando \(\dfrac{1}{\sqrt5-2}\), obtém-se:`, [R`\(\sqrt5+2\)`, R`\(\sqrt5-2\)`, R`\(\dfrac{\sqrt5+2}{3}\)`, R`\(\dfrac{\sqrt5+2}{9}\)`], R`Multiplicando pelo conjugado: \(\dfrac{\sqrt5+2}{(\sqrt5)^2-2^2}=\dfrac{\sqrt5+2}{5-4}=\sqrt5+2\).`),
+  Q(R`Para \(x\ne3\), \(\dfrac{x^2-x-6}{x-3}\) é igual a:`, [R`\(x+2\)`, R`\(x-2\)`, R`\(x+3\)`, R`\(x-3\)`], R`\(x^2-x-6=(x-3)(x+2)\) (soma \(-1\), produto \(-6\)). Cancelando \(x-3\), resta \(x+2\).`),
+  Q(R`A fatoração de \(x^3-27\) é:`, [R`\((x-3)(x^2+3x+9)\)`, R`\((x-3)^3\)`, R`\((x-3)(x^2-3x+9)\)`, R`\((x-3)(x^2+9)\)`], R`Diferença de cubos: \(a^3-b^3=(a-b)(a^2+ab+b^2)\) com \(a=x\), \(b=3\). Já \((x-3)^3\) contém termos em \(x^2\) e \(x\).`),
+  Q(R`O resto da divisão de \(P(x)=x^3-4x+1\) por \(x-2\) é:`, [R`\(1\)`, R`\(0\)`, R`\(17\)`, R`\(-1\)`], R`Teorema do resto: \(P(2)=8-8+1=1\). Não é preciso efetuar a divisão.`),
+  Q(R`O quociente da divisão de \(x^3-6x^2+11x-6\) por \(x-1\) é:`, [R`\(x^2-5x+6\)`, R`\(x^2-7x+18\)`, R`\(x^2+5x+6\)`, R`\(x^2-6x+11\)`], R`Briot-Ruffini com raiz 1 e coeficientes \(1,-6,11,-6\): desce 1; \(1-6=-5\); \(-5+11=6\); \(6-6=0\). Quociente \(x^2-5x+6\), resto 0.`)
+],
+m3: [
+  Q(R`A soma das raízes de \(2x^2-10x+7=0\) é:`, [R`\(5\)`, R`\(-5\)`, R`\(\dfrac72\)`, R`\(10\)`], R`Soma \(=-\dfrac ba=-\dfrac{-10}{2}=5\). (O valor \(\frac72\) é o produto das raízes.)`),
+  Q(R`Na forma canônica, \(x^2-4x+7\) escreve-se:`, [R`\((x-2)^2+3\)`, R`\((x-2)^2+7\)`, R`\((x-4)^2-9\)`, R`\((x+2)^2+3\)`], R`\(x^2-4x+4-4+7=(x-2)^2+3\). Somou-se e subtraiu-se o quadrado da metade de 4.`),
+  Q(R`O conjunto solução de \(x^2-5x+4\gt0\) é:`, [R`\(x\lt1\) ou \(x\gt4\)`, R`\(1\lt x\lt4\)`, R`\(x\gt4\)`, R`\(x\lt1\)`], R`\((x-1)(x-4)\gt0\): parábola com concavidade para cima é positiva fora das raízes 1 e 4.`),
+  Q(R`O conjunto solução de \(\dfrac{x+1}{x-2}\ge0\) é:`, [R`\(x\le-1\) ou \(x\gt2\)`, R`\(-1\le x\lt2\)`, R`\(x\le-1\) ou \(x\ge2\)`, R`\(x\ge-1\)`], R`Pelo varal: quociente positivo para \(x\lt-1\) e para \(x\gt2\). O \(-1\) entra (zera o numerador); o 2 fica aberto (zera o denominador).`),
+  Q(R`Para quais valores de \(k\) a equação \(x^2+kx+9=0\) tem raiz real dupla?`, [R`\(k=\pm6\)`, R`apenas \(k=6\)`, R`\(k=\pm3\)`, R`\(k=\pm9\)`], R`Raiz dupla exige \(\Delta=0\): \(k^2-36=0\Rightarrow k=\pm6\). São os casos \((x\pm3)^2\).`),
+  Q(R`O conjunto solução de \(\sqrt{x+3}=x-3\) é:`, [R`\(\{6\}\)`, R`\(\{1,\,6\}\)`, R`\(\{1\}\)`, R`vazio`], R`Elevando ao quadrado: \(x^2-7x+6=0\Rightarrow x=1\) ou \(x=6\). Verificando: \(x=6\) dá \(3=3\); \(x=1\) dá \(2=-2\), falso. O 1 é raiz estranha.`),
+  Q(R`Quantas raízes reais tem \(x^4-3x^2-4=0\)?`, [R`\(2\)`, R`\(4\)`, R`\(0\)`, R`\(1\)`], R`Com \(y=x^2\): \(y^2-3y-4=0\Rightarrow y=4\) ou \(y=-1\). Só \(y=4\) é admissível, dando \(x=\pm2\).`)
+],
+m4: [
+  Q(R`O conjunto solução de \(|x-4|\le1\) é:`, [R`\([3,\,5]\)`, R`\((3,\,5)\)`, R`\((-\infty,3]\cup[5,+\infty)\)`, R`\([-5,\,-3]\)`], R`\(-1\le x-4\le1\Rightarrow3\le x\le5\): pontos a distância no máximo 1 de 4, extremos incluídos.`),
+  Q(R`A desigualdade \(|x-2|\lt\delta\), com \(\delta\gt0\), equivale a:`, [R`\(2-\delta\lt x\lt2+\delta\)`, R`\(-\delta\lt x\lt\delta\)`, R`\(x\lt2-\delta\) ou \(x\gt2+\delta\)`, R`\(\delta-2\lt x\lt\delta+2\)`], R`É o intervalo aberto de centro 2 e raio \(\delta\): \(-\delta\lt x-2\lt\delta\).`),
+  Q(R`Quantas soluções reais tem \(|x^2-4|=5\)?`, [R`\(2\)`, R`\(4\)`, R`\(0\)`, R`\(1\)`], R`\(x^2-4=5\Rightarrow x=\pm3\). Já \(x^2-4=-5\Rightarrow x^2=-1\) não tem solução real. Total: 2.`),
+  Q(R`Para \(x\lt0\), a expressão \(\dfrac{|x|}{x}\) vale:`, [R`\(-1\)`, R`\(1\)`, R`\(0\)`, R`\(x\)`], R`Se \(x\lt0\), então \(|x|=-x\) e \(\dfrac{-x}{x}=-1\). Esta função é o exemplo clássico de limite lateral diferente em cada lado de 0.`),
+  Q(R`O conjunto solução de \(|2x+1|\gt3\) é:`, [R`\(x\lt-2\) ou \(x\gt1\)`, R`\(-2\lt x\lt1\)`, R`\(x\gt1\)`, R`\(x\lt-1\) ou \(x\gt2\)`], R`\(2x+1\gt3\Rightarrow x\gt1\), ou \(2x+1\lt-3\Rightarrow x\lt-2\). Módulo “maior que” produz dois intervalos externos.`)
+],
+m5: [
+  Q(R`Se \(f(x)=2x+3\) e \(g(x)=x^2\), então \((f\circ g)(2)\) vale:`, [R`\(11\)`, R`\(49\)`, R`\(14\)`, R`\(19\)`], R`Primeiro \(g(2)=4\); depois \(f(4)=2\cdot4+3=11\). O valor 49 seria \((g\circ f)(2)\).`),
+  Q(R`A inversa de \(f(x)=\dfrac{x-1}{2}\) é:`, [R`\(f^{-1}(x)=2x+1\)`, R`\(f^{-1}(x)=\dfrac{2}{x-1}\)`, R`\(f^{-1}(x)=\dfrac{x+1}{2}\)`, R`\(f^{-1}(x)=2x-1\)`], R`\(f\) subtrai 1 e divide por 2; a inversa multiplica por 2 e soma 1. Conferindo: \(f(2x+1)=\frac{2x}{2}=x\).`),
+  Q(`Qual das funções abaixo é ímpar?`, [R`\(f(x)=x^3-x\)`, R`\(f(x)=x^2+1\)`, R`\(f(x)=x^3+1\)`, R`\(f(x)=|x|\)`], R`\(f(-x)=-x^3+x=-(x^3-x)=-f(x)\). Já \(x^3+1\) não é par nem ímpar, por causa da constante.`),
+  Q(R`Os gráficos de \(f\) e de \(f^{-1}\) são simétricos em relação:`, [R`à reta \(y=x\)`, `ao eixo x`, `ao eixo y`, `à origem`], R`A inversa troca os papéis de \(x\) e \(y\): o ponto \((a,b)\) de \(f\) vira \((b,a)\) em \(f^{-1}\), que é o reflexo em \(y=x\).`),
+  Q(R`\(h(x)=(3x-1)^5\) é a composição \(f(g(x))\) com:`, [R`\(g(x)=3x-1\) e \(f(u)=u^5\)`, R`\(g(x)=x^5\) e \(f(u)=3u-1\)`, R`\(g(x)=3x\) e \(f(u)=u^5-1\)`, R`\(g(x)=x-1\) e \(f(u)=3u^5\)`], R`A última operação efetuada é elevar à quinta: essa é a função de fora. O que está dentro dos parênteses, \(3x-1\), é a função de dentro.`)
+],
+m6: [
+  Q(R`O domínio de \(f(x)=\sqrt{2x-6}\) é:`, [R`\([3,+\infty)\)`, R`\((3,+\infty)\)`, R`\((-\infty,3]\)`, R`\(\R\setminus\{3\}\)`], R`\(2x-6\ge0\Rightarrow x\ge3\). O 3 pertence ao domínio, pois \(\sqrt0=0\).`),
+  Q(R`O domínio de \(f(x)=\dfrac{x+1}{x^2-x-2}\) é:`, [R`\(\R\setminus\{-1,\,2\}\)`, R`\(\R\setminus\{2\}\)`, R`\(\R\setminus\{-1\}\)`, R`\(\R\)`], R`\(x^2-x-2=(x-2)(x+1)\) anula-se em 2 e em \(-1\). Mesmo que o fator \(x+1\) cancele, o domínio é determinado na expressão original.`),
+  Q(R`O domínio de \(f(x)=\ln(x-2)+\sqrt{5-x}\) é:`, [R`\((2,\,5]\)`, R`\([2,\,5]\)`, R`\((2,\,5)\)`, R`\((2,+\infty)\)`], R`Logaritmo: \(x\gt2\) (aberto). Raiz: \(x\le5\) (fechado). Interseção: \((2,5]\).`),
+  Q(R`A imagem de \(f(x)=e^x+1\) é:`, [R`\((1,+\infty)\)`, R`\([1,+\infty)\)`, R`\((0,+\infty)\)`, R`\(\R\)`], R`Como \(e^x\gt0\), temos \(e^x+1\gt1\). O valor 1 nunca é atingido, pois \(e^x\) nunca é zero.`),
+  Q(R`O domínio de \(f(x)=\sqrt{x^2-9}\) é:`, [R`\((-\infty,-3]\cup[3,+\infty)\)`, R`\([-3,\,3]\)`, R`\([3,+\infty)\)`, R`\(\R\setminus\{-3,3\}\)`], R`\(x^2-9\ge0\Rightarrow(x-3)(x+3)\ge0\): fora das raízes, incluindo-as. Esquecer o ramo \(x\le-3\) é o erro típico.`)
+],
+m7: [
+  Q(R`O valor de \(\log_381\) é:`, [R`\(4\)`, R`\(27\)`, R`\(3\)`, R`\(9\)`], R`\(3^4=81\). O logaritmo é o expoente.`),
+  Q(R`A solução de \(e^{3x}=7\) é:`, [R`\(x=\dfrac{\ln7}{3}\)`, R`\(x=\ln\dfrac73\)`, R`\(x=3\ln7\)`, R`\(x=\dfrac73\)`], R`Aplicando \(\ln\): \(3x=\ln7\Rightarrow x=\frac{\ln7}{3}\). Note que \(\frac{\ln7}{3}\ne\ln\frac73\).`),
+  Q(R`Para \(x\gt0\), \(\ln(x^3)-\ln x\) é igual a:`, [R`\(2\ln x\)`, R`\(\ln(x^3-x)\)`, R`\(3\)`, R`\((\ln x)^2\)`], R`\(3\ln x-\ln x=2\ln x\). Ou ainda: \(\ln\frac{x^3}{x}=\ln x^2\).`),
+  Q(R`A solução de \(2^x=8^{x-2}\) é:`, [R`\(x=3\)`, R`\(x=2\)`, R`\(x=6\)`, R`\(x=-3\)`], R`Na base 2: \(8^{x-2}=2^{3(x-2)}\). Igualando expoentes: \(x=3x-6\Rightarrow x=3\).`),
+  Q(`Qual das afirmações é FALSA (para x, y > 0)?`, [R`\(\ln(x+y)=\ln x+\ln y\)`, R`\(\ln\dfrac xy=\ln x-\ln y\)`, R`\(\ln(x^r)=r\ln x\)`, R`\(\ln e=1\)`], R`Não há propriedade para o logaritmo de uma soma. O correto é \(\ln(xy)=\ln x+\ln y\).`)
+],
+m8: [
+  Q(R`\(240^\circ\) em radianos é:`, [R`\(\dfrac{4\pi}{3}\)`, R`\(\dfrac{5\pi}{4}\)`, R`\(\dfrac{3\pi}{2}\)`, R`\(\dfrac{2\pi}{3}\)`], R`\(240\cdot\frac{\pi}{180}=\frac{4\pi}{3}\).`),
+  Q(R`O valor de \(\cos\dfrac{2\pi}{3}\) é:`, [R`\(-\dfrac12\)`, R`\(\dfrac12\)`, R`\(-\dfrac{\sqrt3}{2}\)`, R`\(\dfrac{\sqrt3}{2}\)`], R`\(\frac{2\pi}{3}=120^\circ\) está no 2º quadrante (cosseno negativo), com ângulo de referência \(\frac\pi3\): \(-\cos\frac\pi3=-\frac12\).`),
+  Q(R`Se \(\cos x=\dfrac13\), então \(\cos2x\) vale:`, [R`\(-\dfrac79\)`, R`\(\dfrac23\)`, R`\(\dfrac79\)`, R`\(-\dfrac19\)`], R`\(\cos2x=2\cos^2x-1=\frac29-1=-\frac79\). Atenção: \(\cos2x\ne2\cos x\).`),
+  Q(R`A fórmula de rebaixamento de \(\cos^2x\) é:`, [R`\(\dfrac{1+\cos2x}{2}\)`, R`\(\dfrac{1-\cos2x}{2}\)`, R`\(1+\cos2x\)`, R`\(\dfrac{\cos2x}{2}\)`], R`De \(\cos2x=2\cos^2x-1\), isola-se \(\cos^2x=\frac{1+\cos2x}{2}\). A versão com sinal de menos é a de \(\sen^2x\).`),
+  Q(R`A expressão \(1+\tg^2x\) é igual a:`, [R`\(\sec^2x\)`, R`\(\cossec^2x\)`, R`\(\cos^2x\)`, R`\(1\)`], R`Dividindo \(\sen^2x+\cos^2x=1\) por \(\cos^2x\): \(\tg^2x+1=\sec^2x\).`),
+  Q(R`Em um triângulo retângulo de hipotenusa 10, o cateto oposto a um ângulo de \(30^\circ\) mede:`, [R`\(5\)`, R`\(5\sqrt3\)`, R`\(10\sqrt3\)`, R`\(20\)`], R`Cateto oposto \(=\) hipotenusa \(\cdot\sen30^\circ=10\cdot\frac12=5\). O valor \(5\sqrt3\) é o cateto adjacente.`),
+  Q(R`O valor de \(\arcsin\!\left(-\dfrac{\sqrt3}{2}\right)\) é:`, [R`\(-\dfrac\pi3\)`, R`\(\dfrac{4\pi}{3}\)`, R`\(\dfrac{5\pi}{3}\)`, R`\(\dfrac{2\pi}{3}\)`], R`A imagem de \(\arcsin\) é \(\left[-\frac\pi2,\frac\pi2\right]\). Nessa faixa, o único arco com seno \(-\frac{\sqrt3}{2}\) é \(-\frac\pi3\).`)
+],
+m9: [
+  Q(R`A inclinação da reta que passa por \((-1,4)\) e \((3,-4)\) é:`, [R`\(-2\)`, R`\(2\)`, R`\(-\dfrac12\)`, R`\(-8\)`], R`\(m=\dfrac{-4-4}{3-(-1)}=\dfrac{-8}{4}=-2\).`),
+  Q(R`A reta que passa por \((1,3)\) com inclinação 2 é:`, [R`\(y=2x+1\)`, R`\(y=2x+3\)`, R`\(y=2x-1\)`, R`\(y=3x+2\)`], R`\(y-3=2(x-1)\Rightarrow y=2x+1\). Conferindo: em \(x=1\), \(y=3\).`),
+  Q(R`A inclinação de uma reta perpendicular a \(y=-\dfrac13x+2\) é:`, [R`\(3\)`, R`\(-3\)`, R`\(\dfrac13\)`, R`\(-\dfrac13\)`], R`O oposto do inverso de \(-\frac13\) é \(3\): de fato, \(-\frac13\cdot3=-1\).`),
+  Q(R`A taxa de variação média de \(f(x)=x^3\) em \([0,2]\) é:`, [R`\(4\)`, R`\(8\)`, R`\(2\)`, R`\(12\)`], R`\(\dfrac{f(2)-f(0)}{2-0}=\dfrac{8-0}{2}=4\).`),
+  Q(R`Para \(h\ne0\), o quociente \(\dfrac{f(x+h)-f(x)}{h}\) representa:`, [R`a inclinação da reta secante por \((x,f(x))\) e \((x+h,f(x+h))\)`, R`a inclinação da reta tangente em \(x\)`, `a área sob o gráfico entre x e x + h`, `o valor médio da função no intervalo`], R`É \(\Delta y/\Delta x\) entre dois pontos do gráfico. A inclinação da tangente só aparece ao tomar o limite com \(h\to0\).`)
+]
+};
+
+const GERAL = {
+g1: { t: 'Avaliação Geral 1', b: 'Bloco Álgebra e Equações', d: 'Cobre os Módulos 0, 1, 2 e 3 em 15 questões.', qs: [
+  Q(R`Para \(x\gt0\), \(\dfrac{(4x^6)^{1/2}}{x}\) é igual a:`, [R`\(2x^2\)`, R`\(2x^3\)`, R`\(4x^2\)`, R`\(2x^5\)`], R`\((4x^6)^{1/2}=2x^3\); dividindo por \(x\): \(2x^2\).`, 1),
+  Q(R`\(\dfrac{1}{x+h}-\dfrac1x\) é igual a:`, [R`\(\dfrac{-h}{x(x+h)}\)`, R`\(\dfrac{h}{x(x+h)}\)`, R`\(\dfrac1h\)`, R`\(\dfrac{-1}{x^2+h}\)`], R`Denominador comum: \(\dfrac{x-(x+h)}{x(x+h)}=\dfrac{-h}{x(x+h)}\). É a conta central da derivada de \(1/x\).`, 1),
+  Q(R`\(\sqrt{12}+\sqrt{27}\) é igual a:`, [R`\(5\sqrt3\)`, R`\(\sqrt{39}\)`, R`\(6\sqrt3\)`, R`\(5\sqrt6\)`], R`\(2\sqrt3+3\sqrt3=5\sqrt3\). Raízes não se somam radicando com radicando.`, 1),
+  Q(R`Para \(h\ne0\), \(\dfrac{(x+h)^2-x^2}{h}\) simplifica para:`, [R`\(2x+h\)`, R`\(h\)`, R`\(2x\)`, R`\(2x+h^2\)`], R`\(\dfrac{x^2+2xh+h^2-x^2}{h}=\dfrac{h(2x+h)}{h}=2x+h\).`, 2),
+  Q(R`A fatoração de \(x^2-7x+12\) é:`, [R`\((x-3)(x-4)\)`, R`\((x+3)(x+4)\)`, R`\((x-2)(x-6)\)`, R`\((x-1)(x-12)\)`], R`Soma \(-7\) e produto \(12\): os números são \(-3\) e \(-4\).`, 2),
+  Q(R`Para \(x\ge0\) e \(x\ne4\), \(\dfrac{\sqrt x-2}{x-4}\) é igual a:`, [R`\(\dfrac{1}{\sqrt x+2}\)`, R`\(\sqrt x+2\)`, R`\(\dfrac{1}{\sqrt x-2}\)`, R`\(\dfrac12\)`], R`\(x-4=(\sqrt x-2)(\sqrt x+2)\). Cancelando o fator comum, resta \(\dfrac{1}{\sqrt x+2}\).`, 2),
+  Q(R`A fatoração de \(x^3-1\) é:`, [R`\((x-1)(x^2+x+1)\)`, R`\((x-1)^3\)`, R`\((x-1)(x^2-x+1)\)`, R`\((x-1)(x^2+1)\)`], R`Diferença de cubos com \(a=x\) e \(b=1\): \((a-b)(a^2+ab+b^2)\).`, 2),
+  Q(R`As raízes de \(x^2+2x-8=0\) são:`, [R`\(2\) e \(-4\)`, R`\(-2\) e \(4\)`, R`\(2\) e \(4\)`, R`\(-2\) e \(-4\)`], R`Soma \(-2\) e produto \(-8\): \(2\) e \(-4\). Fatorado: \((x-2)(x+4)\).`, 3),
+  Q(R`O valor mínimo de \(f(x)=x^2-6x+10\) é:`, [R`\(1\)`, R`\(10\)`, R`\(3\)`, R`\(-3\)`], R`\(x^2-6x+10=(x-3)^2+1\). O mínimo é 1 e ocorre em \(x=3\).`, 3),
+  Q(R`O conjunto solução de \(\dfrac{x-2}{x+3}\lt0\) é:`, [R`\(-3\lt x\lt2\)`, R`\(x\lt-3\) ou \(x\gt2\)`, R`\(x\lt2\)`, R`\(-2\lt x\lt3\)`], R`O quociente é negativo quando os fatores têm sinais opostos, isto é, entre as raízes \(-3\) e \(2\).`, 3),
+  Q(R`O MMC algébrico dos denominadores \(x^2-4\) e \(x^2+2x\) é:`, [R`\(x(x-2)(x+2)\)`, R`\((x^2-4)(x^2+2x)\)`, R`\(x+2\)`, R`\(x(x+2)\)`], R`Fatorando: \((x-2)(x+2)\) e \(x(x+2)\). Tomam-se todos os fatores com o maior expoente. O fator \(x+2\) sozinho é o MDC.`, 0),
+  Q(R`Alguém resolve \(x^2=5x\) dividindo os dois lados por \(x\) e conclui que \(x=5\) é a única solução. O procedimento:`, [R`perde a solução \(x=0\), pois dividir por \(x\) pressupõe \(x\ne0\)`, `está correto`, R`está errado: a única solução é \(x=0\)`, R`perde a solução \(x=-5\)`], R`O seguro é fatorar: \(x^2-5x=0\Rightarrow x(x-5)=0\Rightarrow x=0\) ou \(x=5\).`, 0),
+  Q(R`O resto da divisão de \(x^3-2x^2+4\) por \(x-2\) é:`, [R`\(4\)`, R`\(0\)`, R`\(-12\)`, R`\(2\)`], R`Teorema do resto: \(P(2)=8-8+4=4\). O valor \(-12\) é \(P(-2)\), resto da divisão por \(x+2\).`, 2),
+  Q(R`O conjunto solução de \(\sqrt{3x+1}=x-1\) é:`, [R`\(\{5\}\)`, R`\(\{0,\,5\}\)`, R`\(\{0\}\)`, R`vazio`], R`Ao quadrado: \(3x+1=x^2-2x+1\Rightarrow x^2-5x=0\Rightarrow x=0\) ou \(x=5\). Verificando: \(x=5\) dá \(4=4\); \(x=0\) dá \(1=-1\), raiz estranha.`, 3),
+  Q(R`As raízes reais de \(x^4-10x^2+9=0\) são:`, [R`\(\pm1\) e \(\pm3\)`, R`\(1\) e \(9\)`, R`\(\pm1\) e \(\pm9\)`, R`\(1\) e \(3\)`], R`Com \(y=x^2\): \(y^2-10y+9=0\Rightarrow y=1\) ou \(y=9\). Voltando: \(x=\pm1\) e \(x=\pm3\). Os valores 1 e 9 são de \(y\), não de \(x\).`, 3)
+]},
+g2: { t: 'Avaliação Geral 2', b: 'Bloco Funções e Logaritmos', d: 'Cobre os Módulos 4, 5, 6 e 7 em 12 questões.', qs: [
+  Q(R`A inequação \(|x-3|\lt2\) equivale a:`, [R`\(1\lt x\lt5\)`, R`\(-5\lt x\lt-1\)`, R`\(x\lt1\) ou \(x\gt5\)`, R`\(-2\lt x\lt2\)`], R`\(-2\lt x-3\lt2\Rightarrow1\lt x\lt5\): vizinhança de centro 3 e raio 2.`, 4),
+  Q(R`As soluções de \(|2x-4|=6\) são:`, [R`\(x=5\) e \(x=-1\)`, R`apenas \(x=5\)`, R`\(x=1\) e \(x=-5\)`, R`\(x=5\) e \(x=1\)`], R`\(2x-4=6\Rightarrow x=5\); \(2x-4=-6\Rightarrow x=-1\).`, 4),
+  Q(R`Para todo \(x\) real, \(\sqrt{x^2-2x+1}\) é igual a:`, [R`\(|x-1|\)`, R`\(x-1\)`, R`\(x+1\)`, R`\(\pm(x-1)\)`], R`\(x^2-2x+1=(x-1)^2\) e \(\sqrt{u^2}=|u|\). Sem o módulo, a igualdade falha para \(x\lt1\).`, 4),
+  Q(R`Se \(f(x)=x^2-1\) e \(g(x)=\sqrt x\), então \(f(g(9))\) vale:`, [R`\(8\)`, R`\(\sqrt{80}\)`, R`\(80\)`, R`\(2\)`], R`\(g(9)=3\) e \(f(3)=9-1=8\). O valor \(\sqrt{80}\) seria \(g(f(9))\).`, 5),
+  Q(R`A inversa de \(f(x)=5x-4\) é:`, [R`\(f^{-1}(x)=\dfrac{x+4}{5}\)`, R`\(f^{-1}(x)=\dfrac{1}{5x-4}\)`, R`\(f^{-1}(x)=\dfrac{x-4}{5}\)`, R`\(f^{-1}(x)=\dfrac x5+4\)`], R`\(f\) multiplica por 5 e subtrai 4; a inversa soma 4 e depois divide por 5.`, 5),
+  Q(`Se f é par e g é ímpar, o produto f · g é:`, [`ímpar`, `par`, `nem par nem ímpar`, `sempre constante`], R`\(f(-x)\,g(-x)=f(x)\cdot(-g(x))=-f(x)g(x)\).`, 5),
+  Q(R`O domínio de \(f(x)=\dfrac{\sqrt{4-x}}{x-1}\) é:`, [R`\((-\infty,1)\cup(1,4]\)`, R`\((-\infty,4]\)`, R`\((1,4]\)`, R`\([4,+\infty)\)`], R`Raiz: \(x\le4\). Denominador: \(x\ne1\). Interseção das duas condições.`, 6),
+  Q(R`O domínio de \(f(x)=\ln(x^2-1)\) é:`, [R`\((-\infty,-1)\cup(1,+\infty)\)`, R`\((-1,1)\)`, R`\((1,+\infty)\)`, R`\(\R\setminus\{-1,1\}\)`], R`\(x^2-1\gt0\Rightarrow(x-1)(x+1)\gt0\): fora das raízes, sem incluí-las.`, 6),
+  Q(R`A imagem de \(f(x)=\sqrt x+2\) é:`, [R`\([2,+\infty)\)`, R`\([0,+\infty)\)`, R`\(\R\)`, R`\((2,+\infty)\)`], R`\(\sqrt x\ge0\), com igualdade em \(x=0\); somando 2, \(f(x)\ge2\), e o valor 2 é atingido.`, 6),
+  Q(R`O valor de \(\ln(e^5)-e^{\ln3}\) é:`, [R`\(2\)`, R`\(8\)`, R`\(\dfrac53\)`, R`\(15\)`], R`\(\ln(e^5)=5\) e \(e^{\ln3}=3\), pelas identidades de cancelamento. \(5-3=2\).`, 7),
+  Q(R`A solução de \(\ln(2x-1)=0\) é:`, [R`\(x=1\)`, R`\(x=\dfrac12\)`, R`\(x=0\)`, R`\(x=\dfrac{e+1}{2}\)`], R`\(\ln u=0\iff u=1\). Então \(2x-1=1\Rightarrow x=1\).`, 7),
+  Q(R`A solução de \(5\cdot2^x=40\) é:`, [R`\(x=3\)`, R`\(x=8\)`, R`\(x=4\)`, R`\(x=\log_240\)`], R`Isole a exponencial antes: \(2^x=8=2^3\Rightarrow x=3\).`, 7)
+]},
+g3: { t: 'Avaliação Geral 3', b: 'Simulado Geral Pré-Cálculo I', d: 'Cobre os Módulos 8 e 9 e traz questões integradoras de todo o curso: 20 questões que medem a prontidão para Cálculo I.', qs: [
+  Q(R`\(\dfrac{3\pi}{4}\) rad correspondem a:`, [R`\(135^\circ\)`, R`\(120^\circ\)`, R`\(150^\circ\)`, R`\(270^\circ\)`], R`\(\frac{3\pi}{4}\cdot\frac{180^\circ}{\pi}=135^\circ\).`, 8),
+  Q(R`O valor de \(\sen\dfrac{7\pi}{6}\) é:`, [R`\(-\dfrac12\)`, R`\(\dfrac12\)`, R`\(-\dfrac{\sqrt3}{2}\)`, R`\(\dfrac{\sqrt3}{2}\)`], R`\(\frac{7\pi}{6}=210^\circ\) está no 3º quadrante (seno negativo), com referência \(\frac\pi6\).`, 8),
+  Q(R`\(\sen2x\) é igual a:`, [R`\(2\sen x\cos x\)`, R`\(2\sen x\)`, R`\(\sen^2x-\cos^2x\)`, R`\(2\cos^2x-1\)`], R`Arco duplo do seno. A última alternativa é uma das formas de \(\cos2x\).`, 8),
+  Q(R`Se \(\tg x=1\) e \(\pi\lt x\lt\dfrac{3\pi}{2}\), então \(x\) é:`, [R`\(\dfrac{5\pi}{4}\)`, R`\(\dfrac\pi4\)`, R`\(\dfrac{3\pi}{4}\)`, R`\(\dfrac{7\pi}{4}\)`], R`A tangente vale 1 com referência \(\frac\pi4\) e é positiva no 3º quadrante: \(\pi+\frac\pi4=\frac{5\pi}{4}\).`, 8),
+  Q(R`A reta que passa por \((2,5)\) com inclinação \(-3\) é:`, [R`\(y=-3x+11\)`, R`\(y=-3x+5\)`, R`\(y=-3x-1\)`, R`\(y=3x-1\)`], R`\(y-5=-3(x-2)\Rightarrow y=-3x+11\).`, 9),
+  Q(R`As retas \(y=2x+1\) e \(y=-\dfrac x2+4\) são:`, [`perpendiculares`, `paralelas`, `coincidentes`, `concorrentes, mas não perpendiculares`], R`\(2\cdot\left(-\frac12\right)=-1\): produto das inclinações igual a \(-1\).`, 9),
+  Q(R`A taxa de variação média de \(f(x)=x^2+1\) em \([1,4]\) é:`, [R`\(5\)`, R`\(15\)`, R`\(3\)`, R`\(\dfrac{17}{4}\)`], R`\(\dfrac{f(4)-f(1)}{4-1}=\dfrac{17-2}{3}=5\).`, 9),
+  Q(R`Quando \(h\to0\), a reta secante por \((a,f(a))\) e \((a+h,f(a+h))\) tende:`, [R`à reta tangente ao gráfico em \(x=a\)`, R`à reta normal ao gráfico em \(x=a\)`, R`à reta horizontal \(y=f(a)\)`, R`ao eixo \(x\)`], R`É a ideia geométrica da derivada: a tangente é a posição limite das secantes.`, 9),
+  Q(R`Para \(h\ne0\), \(\dfrac{(2+h)^2-4}{h}\) simplifica para:`, [R`\(4+h\)`, R`\(h\)`, R`\(4\)`, R`\(4+h^2\)`], R`\(\dfrac{4h+h^2}{h}=4+h\). O valor 4 só aparece no limite; a expressão em si é \(4+h\).`, 1),
+  Q(R`Para \(h\ne0\), \(\dfrac{\sqrt{9+h}-3}{h}\) é igual a:`, [R`\(\dfrac{1}{\sqrt{9+h}+3}\)`, R`\(\dfrac{1}{\sqrt{9+h}-3}\)`, R`\(\sqrt{9+h}+3\)`, R`\(\dfrac16\)`], R`Multiplicando pelo conjugado, o numerador vira \((9+h)-9=h\), que cancela com o denominador. \(\frac16\) é apenas o limite quando \(h\to0\).`, 2),
+  Q(R`O conjunto solução de \(x^2\lt9\) é:`, [R`\(-3\lt x\lt3\)`, R`\(x\lt3\)`, R`\(x\lt\pm3\)`, R`\(x\lt-3\) ou \(x\gt3\)`], R`\(x^2\lt9\iff|x|\lt3\iff-3\lt x\lt3\).`, 3),
+  Q(R`A desigualdade \(|f(x)-L|\lt\varepsilon\) significa que:`, [R`\(f(x)\) está a uma distância menor que \(\varepsilon\) de \(L\)`, R`\(f(x)\) é menor que \(L\)`, R`\(f(x)\) é igual a \(L+\varepsilon\)`, R`\(L\) é menor que \(\varepsilon\)`], R`Equivale a \(L-\varepsilon\lt f(x)\lt L+\varepsilon\): \(f(x)\) dentro da faixa de raio \(\varepsilon\) em torno de \(L\).`, 4),
+  Q(R`\(h(x)=\sen(x^2)\) é a composição \(f(g(x))\) com:`, [R`\(g(x)=x^2\) e \(f(u)=\sen u\)`, R`\(g(x)=\sen x\) e \(f(u)=u^2\)`, R`\(g(x)=2x\) e \(f(u)=\sen u\)`, R`\(g(x)=x\) e \(f(u)=u^2\sen u\)`], R`Primeiro eleva-se ao quadrado (dentro), depois aplica-se o seno (fora). A segunda alternativa descreve \(\sen^2x\).`, 5),
+  Q(R`O domínio de \(f(x)=\dfrac{\ln x}{x-1}\) é:`, [R`\((0,1)\cup(1,+\infty)\)`, R`\((0,+\infty)\)`, R`\((1,+\infty)\)`, R`\(\R\setminus\{1\}\)`], R`Logaritmando: \(x\gt0\). Denominador: \(x\ne1\). Interseção das duas condições.`, 6),
+  Q(R`As soluções reais de \(e^{2x}=5e^x\) são:`, [R`apenas \(x=\ln5\)`, R`\(x=0\) e \(x=\ln5\)`, R`apenas \(x=5\)`, R`\(x=\dfrac{\ln5}{2}\)`], R`Como \(e^x\gt0\), pode-se dividir por \(e^x\): \(e^x=5\Rightarrow x=\ln5\). O fator \(e^x\) nunca se anula, então não há outra solução.`, 7),
+  Q(R`Em um triângulo retângulo de catetos 3 e 4, o seno do menor ângulo agudo é:`, [R`\(\dfrac35\)`, R`\(\dfrac45\)`, R`\(\dfrac34\)`, R`\(\dfrac43\)`], R`A hipotenusa é 5. O menor ângulo é oposto ao menor cateto, 3: seno \(=\frac35\).`, 8),
+  Q(R`A imagem da função \(y=\arcsin x\) é:`, [R`\(\left[-\frac\pi2,\frac\pi2\right]\)`, R`\([0,\pi]\)`, R`\([-1,1]\)`, R`\(\R\)`], R`O seno é restrito a \(\left[-\frac\pi2,\frac\pi2\right]\) para ter inversa; esse intervalo vira a imagem de \(\arcsin\). \([-1,1]\) é o domínio e \([0,\pi]\) é a imagem de \(\arccos\).`, 8),
+  Q(R`Para \(x\ne0\), \(\dfrac{x^2+2x}{2x}\) é igual a:`, [R`\(\dfrac{x+2}{2}\)`, R`\(x^2+1\)`, R`\(x+2\)`, R`\(\dfrac x2+2\)`], R`Fatore antes de cancelar: \(\dfrac{x(x+2)}{2x}=\dfrac{x+2}{2}\). Cortar o \(2x\) com a parcela \(2x\) do numerador é o erro clássico de cancelar parcelas.`, 0),
+  Q(R`Como \(x=2\) anula \(x^3-3x-2\), para \(x\ne2\) a fração \(\dfrac{x^3-3x-2}{x-2}\) é igual a:`, [R`\(x^2+2x+1\)`, R`\(x^2-2x+1\)`, R`\(x^2+1\)`, R`\(x^2-3\)`], R`Briot-Ruffini com raiz 2 e coeficientes \(1,0,-3,-2\): desce 1; \(2+0=2\); \(4-3=1\); \(2-2=0\). Quociente \(x^2+2x+1\). Não esqueça o coeficiente 0 de \(x^2\).`, 2),
+  Q(R`O conjunto solução de \(\sqrt{x+6}=x\) é:`, [R`\(\{3\}\)`, R`\(\{-2,\,3\}\)`, R`\(\{-2\}\)`, R`vazio`], R`Ao quadrado: \(x^2-x-6=0\Rightarrow x=3\) ou \(x=-2\). Como \(\sqrt{x+6}\ge0\), é preciso \(x\ge0\): \(x=-2\) dá \(2=-2\), raiz estranha.`, 3)
+]}
+};
+
+/* =================== ESTADO (LocalStorage com reserva em memória) =================== */
+const KEY = 'caderno-precalculo-v1';
+let S = { visited: {}, flash: {}, exam: {}, timer: true, theme: null, last: 'inicio' };
+let canStore = true;
+try {
+  const raw = localStorage.getItem(KEY);
+  if (raw) S = Object.assign(S, JSON.parse(raw));
+  localStorage.setItem(KEY, JSON.stringify(S));
+} catch (e) { canStore = false; }
+const save = () => { if (!canStore) return; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { canStore = false; } };
+
+/* =================== UTILITÁRIOS =================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const VIEWS = ['inicio', ...MODS.map(m => 'm' + m.n), 'g1', 'g2', 'g3'];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const idx = n => Array.from({ length: n }, (_, i) => i);
+const joinPt = a => a.length < 2 ? String(a[0]) : a.slice(0, -1).join(', ') + ' e ' + a[a.length - 1];
+const questions = id => (EXAM[id] || GERAL[id].qs);
+const isGeral = id => id[0] === 'g';
+
+let mjChain = Promise.resolve();
+const mjReady = () => !!(window.MathJax && MathJax.typesetPromise);
+function typeset(el) {
+  if (!mjReady() || el.closest('[hidden]')) return;
+  mjChain = mjChain.then(() => MathJax.typesetPromise([el])).catch(e => console.warn('MathJax:', e));
+}
+const typesetDone = new Set();
+let current = 'inicio';
+document.addEventListener('mj-ready', () => { typesetDone.add(current); typeset($('#v-' + current)); });
+
+/* =================== NAVEGAÇÃO =================== */
+function buildNav() {
+  const item = (id, n, t) => `<button class="nav-i" data-go="${id}"><span class="nav-n">${n}</span><span>${t}</span><span class="nav-s" data-st="${id}"></span></button>`;
+  $('#nav').innerHTML =
+    item('inicio', '⌂', 'Painel de progresso') +
+    `<div class="nav-g">Módulos</div>` + MODS.map(m => item('m' + m.n, m.n, m.t + (m.opt ? ' (opcional)' : ''))).join('') +
+    `<div class="nav-g">Avaliações gerais</div>` + Object.keys(GERAL).map((g, i) => item(g, 'G' + (i + 1), GERAL[g].b)).join('');
+  $('#sideFoot').textContent = canStore
+    ? 'Seu progresso fica salvo neste navegador.'
+    : 'O armazenamento local está bloqueado aqui: o progresso vale só até fechar a página.';
+}
+
+function titleOf(id) {
+  if (id === 'inicio') return 'Painel de progresso';
+  if (isGeral(id)) return GERAL[id].t + ': ' + GERAL[id].b;
+  const m = MODS.find(x => x.n === +id.slice(1));
+  return 'Módulo ' + m.n + ': ' + m.t;
+}
+
+function show(id) {
+  if (!VIEWS.includes(id)) id = 'inicio';
+  leaveFlash();
+  current = id;
+  VIEWS.forEach(v => { $('#v-' + v).hidden = v !== id; });
+  $$('.nav-i').forEach(b => b.classList.toggle('on', b.dataset.go === id));
+  $('#topTitle').textContent = titleOf(id);
+  closeMenu();
+  if (id === 'inicio') renderHome();
+  else { S.visited[id] = true; S.last = id; save(); }
+  $('#main').scrollTop = 0;
+  if (mjReady() && !typesetDone.has(id)) { typesetDone.add(id); typeset($('#v-' + id)); }
+  updateProgress();
+}
+const openMenu = () => { $('#side').classList.add('open'); $('#scrim').classList.add('open'); };
+const closeMenu = () => { $('#side').classList.remove('open'); $('#scrim').classList.remove('open'); };
+
+/* =================== PROGRESSO =================== */
+const modPct = id => (S.visited[id] ? 20 : 0) + (S.flash[id] ? 30 : 0) + (S.exam[id] ? 50 : 0);
+const modDone = id => !!(S.exam[id] && S.exam[id].best >= 60);
+
+function updateProgress() {
+  const done = CORE.filter(m => modDone('m' + m.n)).length;
+  $('#gbar').style.width = (done / CORE.length * 100) + '%';
+  $('#gtxt').textContent = done + '/' + CORE.length + ' módulos';
+  $$('[data-st]').forEach(el => {
+    const r = S.exam[el.dataset.st];
+    el.textContent = r ? r.best + '%' : '';
+    el.className = 'nav-s' + (r ? (r.best >= 60 ? ' ok' : ' bad') : '');
+  });
+}
+
+function renderHome() {
+  const done = CORE.filter(m => modDone('m' + m.n)).length;
+  const notas = CORE.map(m => S.exam['m' + m.n]).filter(Boolean).map(r => r.best);
+  const media = notas.length ? Math.round(notas.reduce((a, b) => a + b, 0) / notas.length) + '%' : '–';
+  const gerais = Object.keys(GERAL).filter(g => S.exam[g]).length;
+  const cont = S.last && S.last !== 'inicio'
+    ? `<button class="btn primary" data-go="${S.last}">Continuar: ${titleOf(S.last)}</button>`
+    : `<button class="btn primary" data-go="m1">Começar pelo Módulo 1</button>`;
+  const modCards = MODS.map(m => {
+    const id = 'm' + m.n, f = S.flash[id], e = S.exam[id], p = modPct(id);
+    const meta = [f ? `Flash-quiz ${f.score}/${f.total}` : 'Flash-quiz pendente', e ? `prova ${e.best}%` : 'prova pendente'].join(', ');
+    return `<button class="card" data-go="${id}"><span class="card-n">Módulo ${m.n}${m.opt ? ' (opcional)' : ''}${modDone(id) ? ' ✓ concluído' : ''}</span><span class="card-t">${m.t}</span>
+      <span class="bar" aria-hidden="true"><i class="${modDone(id) ? 'done' : ''}" style="width:${p}%"></i></span><span class="card-m">${meta}</span></button>`;
+  }).join('');
+  const gCards = Object.keys(GERAL).map(g => {
+    const G = GERAL[g], e = S.exam[g];
+    return `<button class="card" data-go="${g}"><span class="card-n">${G.t}</span><span class="card-t">${G.b}</span>
+      <span class="bar" aria-hidden="true"><i class="${e && e.best >= 60 ? 'done' : ''}" style="width:${e ? e.best : 0}%"></i></span>
+      <span class="card-m">${e ? `Última nota ${e.last}% (${e.hits}/${e.total}). ${e.diag || ''}` : G.d}</span></button>`;
+  }).join('');
+  $('#v-inicio').innerHTML = `
+    <div class="mhead hero"><h1>Caderno Interativo de Pré-Cálculo</h1>
+      <p>Nove módulos, mais um nivelamento opcional, com teoria, problemas resolvidos por mais de um caminho, exercícios, flash-quiz e prova. Três avaliações gerais dizem se você está pronto para Cálculo I.</p>
+      <div class="actions">${cont}</div></div>
+    <div class="stats">
+      <div class="stat"><b>${done}/9</b><span>módulos concluídos (prova com 60% ou mais)</span></div>
+      <div class="stat"><b>${media}</b><span>média das melhores notas modulares</span></div>
+      <div class="stat"><b>${gerais}/3</b><span>avaliações gerais realizadas</span></div>
+    </div>
+    <h2 class="h-sec">Módulos</h2><div class="cards">${modCards}</div>
+    <h2 class="h-sec">Avaliações gerais cumulativas</h2><div class="cards">${gCards}</div>
+    <h2 class="h-sec">Como estudar cada módulo</h2>
+    <div class="how"><ol>
+      <li>Leia o resumo teórico com papel e caneta ao lado, refazendo as passagens.</li>
+      <li>Nos problemas resolvidos, compare as abordagens e escolha a que faz mais sentido para você.</li>
+      <li>Resolva os exercícios de fixação sozinho; só então abra a resolução comentada.</li>
+      <li>Faça o flash-quiz: se precisar de contas longas, o conceito ainda não está firme.</li>
+      <li>Envie a avaliação modular. Com 60% ou mais, o módulo conta como concluído.</li>
+    </ol>
+    <p class="muted">O Módulo 0 é opcional e não entra na contagem dos nove módulos: se acertar 80% ou mais na avaliação dele, pode pulá-lo. Faça a Avaliação Geral 1 após o Módulo 3, a 2 após o Módulo 7 e a 3 ao final.</p></div>
+    <div class="actions" id="resetBox"><button class="btn sm danger" data-reset="1">Apagar todo o progresso</button></div>`;
+}
+
+/* =================== MONTAGEM DOS MÓDULOS =================== */
+const SEC = { t: 'Resumo teórico e fórmulas-chave', r: 'Questões resolvidas passo a passo', f: 'Exercícios práticos de fixação', q: 'Flash-quiz de 30 segundos', a: 'Avaliação modular' };
+const CHIP = { t: 'Teoria', r: 'Resolvidas', f: 'Fixação', q: 'Flash-quiz', a: 'Avaliação' };
+
+function setupModule(m) {
+  const id = 'm' + m.n, view = $('#v-' + id);
+  view.insertAdjacentHTML('beforeend',
+    `<div class="sec" data-s="q"><div id="flash-${id}"></div></div>
+     <div class="sec" data-s="a"><p class="muted">${EXAM[id].length} questões de múltipla escolha, operacionais e conceituais. A nota é calculada ao enviar, com gabarito comentado.</p><div id="exam-${id}"></div></div>`);
+  let k = 0;
+  $$('.sec', view).forEach(sec => {
+    const s = sec.dataset.s; k++;
+    sec.id = `${id}-${s}`;
+    sec.insertAdjacentHTML('afterbegin', `<h2><span class="num">${k}</span>${SEC[s]}</h2>`);
+  });
+  $$('.sol', view).forEach(sol => {
+    sol.classList.add('closed');
+    sol.insertAdjacentHTML('beforebegin', `<button class="btn sm" data-sol aria-expanded="false">Mostrar resolução comentada</button>`);
+  });
+  view.insertAdjacentHTML('afterbegin',
+    `<div class="mhead"><span class="mlabel">${m.opt ? 'Módulo 0, opcional' : 'Módulo ' + m.n + ' de 9'}</span><h1>${m.t}</h1><p>${m.s}</p></div>
+     <div class="chips">${Object.keys(CHIP).map(s => `<button class="chip" data-scroll="${id}-${s}">${CHIP[s]}</button>`).join('')}</div>`);
+  const next = m.n < 9 ? `<button class="btn" data-go="m${m.n + 1}">Ir para o Módulo ${m.n + 1}</button>` : `<button class="btn" data-go="g3">Ir para o Simulado Geral</button>`;
+  const ger = m.n === 3 ? `<button class="btn primary" data-go="g1">Fazer a Avaliação Geral 1</button>` : m.n === 7 ? `<button class="btn primary" data-go="g2">Fazer a Avaliação Geral 2</button>` : '';
+  view.insertAdjacentHTML('beforeend', `<div class="actions">${ger}${next}<button class="btn" data-go="inicio">Voltar ao painel</button></div>`);
+  flashIntro(id);
+  renderExam(id);
+}
+
+function setupGeral(id) {
+  const G = GERAL[id];
+  $('#v-' + id).innerHTML =
+    `<div class="mhead"><span class="mlabel">${G.t}</span><h1>${G.b}</h1><p>${G.d} Ao enviar, você recebe a nota, o gabarito comentado e um diagnóstico por módulo.</p></div>
+     <div class="sec"><div id="exam-${id}"></div></div>
+     <div class="actions"><button class="btn" data-go="inicio">Voltar ao painel</button></div>`;
+  renderExam(id);
+}
+
+/* =================== FLASH-QUIZ =================== */
+const FQ_TIME = 30;
+const fq = {};
+let timer = null, activeFlash = null;
+
+function stopTimer() { if (timer) { clearInterval(timer); timer = null; } }
+function leaveFlash() {
+  stopTimer();
+  if (activeFlash) { const id = activeFlash; activeFlash = null; flashIntro(id); typeset($('#flash-' + id)); }
+}
+function flashIntro(id) {
+  const n = FLASH[id].length, prev = S.flash[id];
+  $('#flash-' + id).innerHTML =
+    `<p>${n} questões estritamente conceituais, sem contas longas. Você recebe a justificativa teórica logo após cada resposta.</p>
+     <label class="chk"><input type="checkbox" data-timer ${S.timer ? 'checked' : ''}> Usar cronômetro de 30 segundos por questão</label>
+     ${prev ? `<p class="muted">Último resultado: <b>${prev.score} de ${prev.total}</b>.</p>` : ''}
+     <div class="actions"><button class="btn primary" data-fstart="${id}">${prev ? 'Refazer o flash-quiz' : 'Iniciar o flash-quiz'}</button></div>`;
+}
+function flashStart(id) {
+  stopTimer();
+  fq[id] = { i: 0, score: 0, order: shuffle(idx(FLASH[id].length)), done: false };
+  activeFlash = id;
+  flashQuestion(id);
+}
+function flashQuestion(id) {
+  const st = fq[id], n = FLASH[id].length, q = FLASH[id][st.order[st.i]], ord = shuffle(idx(q.o.length));
+  st.done = false;
+  const box = $('#flash-' + id);
+  box.innerHTML =
+    `<div class="fq-head"><span>Questão ${st.i + 1} de ${n}</span><span class="fq-clock">${S.timer ? FQ_TIME + ' s' : 'Sem cronômetro'}</span></div>
+     <div class="fq-bar" ${S.timer ? '' : 'hidden'}><i></i></div>
+     <p class="q-text">${q.q}</p>
+     <div class="opts">${ord.map((k, j) => `<button class="opt" data-fopt="${id}" data-k="${k}"><span class="ltr">${'ABCDE'[j]}</span><span>${q.o[k]}</span></button>`).join('')}</div>
+     <div class="fq-fb" aria-live="polite"></div>`;
+  typeset(box);
+  if (S.timer) {
+    const t0 = Date.now(), bar = $('.fq-bar i', box), clock = $('.fq-clock', box);
+    timer = setInterval(() => {
+      const left = FQ_TIME - (Date.now() - t0) / 1000;
+      if (left <= 0) { flashAnswer(id, -1); return; }
+      bar.style.width = (left / FQ_TIME * 100) + '%';
+      bar.classList.toggle('low', left <= 10);
+      clock.textContent = Math.ceil(left) + ' s';
+    }, 200);
+  }
+}
+function flashAnswer(id, k) {
+  const st = fq[id];
+  if (!st || st.done) return;
+  st.done = true; stopTimer();
+  const n = FLASH[id].length, q = FLASH[id][st.order[st.i]], ok = k === 0, box = $('#flash-' + id);
+  if (ok) st.score++;
+  $$('.opt', box).forEach(b => {
+    b.disabled = true; b.classList.add('locked');
+    const bk = +b.dataset.k;
+    if (bk === 0) b.classList.add('ok'); else if (bk === k) b.classList.add('bad');
+  });
+  if (k === -1) { const bar = $('.fq-bar i', box); if (bar) bar.style.width = '0%'; $('.fq-clock', box).textContent = '0 s'; }
+  const last = st.i === n - 1;
+  $('.fq-fb', box).innerHTML =
+    `<div class="expl ${ok ? 'ok' : 'bad'}"><b>${ok ? 'Correto.' : k === -1 ? 'Tempo esgotado.' : 'Incorreto.'}</b> ${q.e}</div>
+     <div class="actions"><button class="btn primary" data-fnext="${id}">${last ? 'Ver resultado' : 'Próxima questão'}</button></div>`;
+  typeset(box);
+  $('[data-fnext]', box).focus({ preventScroll: true });
+}
+function flashNext(id) {
+  const st = fq[id], n = FLASH[id].length;
+  if (st.i < n - 1) { st.i++; flashQuestion(id); return; }
+  activeFlash = null;
+  S.flash[id] = { score: st.score, total: n }; save(); updateProgress();
+  const full = st.score === n, lvl = full ? 'ok' : st.score >= n / 2 ? 'mid' : 'bad';
+  $('#flash-' + id).innerHTML =
+    `<div class="result ${lvl}"><div class="big">${st.score} de ${n}</div>
+     <h4>${full ? 'Conceitos na ponta da língua' : st.score >= n / 2 ? 'Quase lá' : 'Os conceitos ainda não estão firmes'}</h4>
+     <p>${full ? 'Siga para a avaliação modular.' : 'Releia no resumo teórico os pontos que errou e refaça o flash-quiz antes da avaliação.'}</p></div>
+     <div class="actions"><button class="btn" data-fstart="${id}">Refazer o flash-quiz</button><button class="btn" data-scroll="${id}-a">Ir para a avaliação modular</button></div>`;
+}
+
+/* =================== AVALIAÇÕES (modulares e gerais) =================== */
+const ex = {};
+function renderExam(id) {
+  const qs = questions(id), prev = S.exam[id];
+  ex[id] = { ord: qs.map(q => shuffle(idx(q.o.length))), warned: false };
+  const box = $('#exam-' + id);
+  box.innerHTML =
+    `${prev ? `<p class="muted">Última nota: <b>${prev.last}%</b>. Melhor nota: <b>${prev.best}%</b>.${prev.diag ? ' Diagnóstico anterior: ' + prev.diag : ''}</p>` : ''}
+     <div class="result" hidden tabindex="-1"></div>
+     <ol class="qlist">${qs.map((q, i) =>
+       `<li class="qitem"><p class="q-text">${q.q}</p>
+        <div class="opts" role="radiogroup" aria-label="Alternativas da questão ${i + 1}">${ex[id].ord[i].map((k, j) =>
+          `<label class="opt"><input type="radio" name="${id}-q${i}" value="${k}"><span class="ltr">${'ABCDE'[j]}</span><span>${q.o[k]}</span></label>`).join('')}</div>
+        <div class="expl" hidden></div></li>`).join('')}</ol>
+     <p class="warnline" hidden></p>
+     <div class="actions"><button class="btn primary" data-submit="${id}">Enviar e corrigir</button></div>`;
+  typeset(box);
+}
+
+function diagnose(id, pct, per) {
+  const weak = Object.keys(per).map(Number).filter(m => per[m].h / per[m].t < 0.6).sort((a, b) => a - b);
+  const rev = weak.length ? 'Revisar ' + (weak.length > 1 ? 'Módulos ' : 'Módulo ') + joinPt(weak) : '';
+  if (id === 'g3') {
+    if (pct >= 80) return { lvl: 'ok', t: 'Pronto para Cálculo I', d: weak.length ? `Base sólida. Para fechar as lacunas restantes: ${rev.toLowerCase()}.` : 'Sua base de álgebra, funções e trigonometria está sólida. Você pode iniciar limites e derivadas com segurança.', weak };
+    if (pct >= 60) return { lvl: 'mid', t: 'Quase pronto para Cálculo I' + (rev ? '. ' + rev : ''), d: 'Você tem a maior parte da base, mas as lacunas indicadas costumam travar o início do curso. Reestude esses módulos e refaça o simulado.', weak };
+    return { lvl: 'bad', t: 'Ainda não está pronto para Cálculo I' + (rev ? '. ' + rev : ''), d: 'Há lacunas importantes de pré-cálculo. Refaça os módulos indicados, começando pelos de menor número, antes de avançar.', weak };
+  }
+  if (pct >= 80) return { lvl: 'ok', t: 'Bloco dominado', d: weak.length ? `Bom resultado. Ponto de atenção: ${rev.toLowerCase()}.` : 'Você domina os módulos deste bloco. Siga em frente.', weak };
+  if (pct >= 60) return { lvl: 'mid', t: 'Bloco parcialmente dominado' + (rev ? '. ' + rev : ''), d: 'O suficiente para avançar, mas vale reforçar os módulos indicados antes do simulado final.', weak };
+  return { lvl: 'bad', t: 'Bloco precisa de revisão' + (rev ? '. ' + rev : ''), d: 'Reestude os módulos indicados e refaça esta avaliação antes de prosseguir.', weak };
+}
+
+function submitExam(id) {
+  const qs = questions(id), st = ex[id], box = $('#exam-' + id), geral = isGeral(id);
+  const ans = qs.map((q, i) => { const c = $(`input[name="${id}-q${i}"]:checked`, box); return c ? +c.value : null; });
+  const missing = ans.filter(a => a === null).length, warn = $('.warnline', box);
+  if (missing && !st.warned) {
+    st.warned = true; warn.hidden = false;
+    warn.textContent = (missing === 1 ? 'Falta 1 questão sem resposta.' : `Faltam ${missing} questões sem resposta.`) + ' Responda ou clique novamente em “Enviar e corrigir” para enviar assim mesmo (em branco conta como erro).';
+    return;
+  }
+  warn.hidden = true;
+  let hits = 0; const per = {};
+  $$('.qitem', box).forEach((li, i) => {
+    const q = qs[i], a = ans[i], ok = a === 0;
+    if (ok) hits++;
+    if (geral) { per[q.m] = per[q.m] || { h: 0, t: 0 }; per[q.m].t++; if (ok) per[q.m].h++; }
+    li.classList.add(ok ? 'is-ok' : 'is-bad');
+    $$('label.opt', li).forEach(l => {
+      const inp = $('input', l); inp.disabled = true; l.classList.add('locked'); l.classList.remove('sel');
+      if (+inp.value === 0) l.classList.add('ok'); else if (inp.checked) l.classList.add('bad');
+    });
+    const e = $('.expl', li); e.hidden = false;
+    e.innerHTML = `<b>${ok ? 'Correto.' : a === null ? 'Em branco.' : 'Incorreto.'}</b> ${q.e}${geral ? `<span class="mtag">Módulo ${q.m}</span>` : ''}`;
+  });
+  const total = qs.length, pct = Math.round(hits / total * 100), prev = S.exam[id];
+  let D;
+  if (geral) D = diagnose(id, pct, per);
+  else if (pct >= 80) D = { lvl: 'ok', t: 'Módulo dominado', d: 'Excelente. Você pode seguir para o próximo módulo.' };
+  else if (pct >= 60) D = { lvl: 'mid', t: 'Módulo concluído', d: 'Nota suficiente. Leia o gabarito comentado das questões erradas antes de avançar.' };
+  else D = { lvl: 'bad', t: 'Módulo ainda não concluído', d: 'São necessários 60% para concluir. Reveja o resumo teórico e os problemas resolvidos, depois refaça a avaliação.' };
+  S.exam[id] = { last: pct, best: Math.max(pct, prev ? prev.best : 0), hits, total, diag: geral ? D.t + '.' : '' };
+  save(); updateProgress();
+  const perHtml = geral ? `<div class="per">${Object.keys(per).map(Number).sort((a, b) => a - b).map(m => {
+    const p = per[m], w = p.h / p.t < 0.6;
+    return `<div class="per-row"><span>Módulo ${m}</span><span class="bar"><i class="${w ? 'w' : 's'}" style="width:${Math.max(4, p.h / p.t * 100)}%"></i></span><span>${p.h}/${p.t}</span></div>`;
+  }).join('')}</div>` : '';
+  const goWeak = geral && D.weak.length ? D.weak.map(m => `<button class="btn sm" data-go="m${m}">Revisar o Módulo ${m}</button>`).join('') : '';
+  const res = $('.result', box);
+  res.className = 'result ' + D.lvl; res.hidden = false;
+  res.innerHTML = `<div class="big">${pct}%</div><p class="muted" style="margin:0">${hits} de ${total} acertos</p><h4>${D.t}</h4><p>${D.d}</p>${perHtml}
+    <div class="actions">${goWeak}<button class="btn sm" data-redo="${id}">Refazer a avaliação</button></div>`;
+  $('[data-submit]', box).hidden = true;
+  typeset(box);
+  res.scrollIntoView({ block: 'start' }); res.focus({ preventScroll: true });
+}
+
+/* =================== TEMA =================== */
+function applyTheme() { if (S.theme) document.documentElement.dataset.theme = S.theme; else delete document.documentElement.dataset.theme; }
+function toggleTheme() {
+  const now = S.theme || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  S.theme = now === 'dark' ? 'light' : 'dark'; applyTheme(); save();
+}
+
+/* =================== EVENTOS =================== */
+document.addEventListener('click', ev => {
+  const t = ev.target.closest('button, .scrim'); if (!t) return;
+  const d = t.dataset;
+  if (t.id === 'menuBtn') return openMenu();
+  if (t.id === 'scrim') return closeMenu();
+  if (t.id === 'themeBtn') return toggleTheme();
+  if (d.go) return show(d.go);
+  if (d.scroll) { const el = document.getElementById(d.scroll); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if ('sol' in d) {
+    const sol = t.nextElementSibling, open = sol.classList.toggle('closed') === false;
+    t.textContent = open ? 'Ocultar resolução comentada' : 'Mostrar resolução comentada';
+    t.setAttribute('aria-expanded', open); return;
+  }
+  if (d.fstart) return flashStart(d.fstart);
+  if (d.fopt) return flashAnswer(d.fopt, +d.k);
+  if (d.fnext) return flashNext(d.fnext);
+  if (d.submit) return submitExam(d.submit);
+  if (d.redo) { renderExam(d.redo); $('#exam-' + d.redo).closest('.sec').scrollIntoView({ block: 'start' }); return; }
+  if (d.reset === '1') { $('#resetBox').innerHTML = `<span class="warnline">Isso apaga notas e progresso de todos os módulos.</span><button class="btn sm danger" data-reset="2">Confirmar e apagar</button><button class="btn sm" data-go="inicio">Cancelar</button>`; return; }
+  if (d.reset === '2') {
+    S = { visited: {}, flash: {}, exam: {}, timer: S.timer, theme: S.theme, last: 'inicio' }; save(); typesetDone.clear();
+    MODS.forEach(m => { flashIntro('m' + m.n); renderExam('m' + m.n); }); Object.keys(GERAL).forEach(renderExam);
+    return show('inicio');
+  }
+});
+document.addEventListener('change', ev => {
+  const t = ev.target;
+  if (t.matches('[data-timer]')) { S.timer = t.checked; save(); return; }
+  if (t.matches('.opt input[type=radio]')) { $$('label.opt', t.closest('.opts')).forEach(l => l.classList.toggle('sel', $('input', l).checked)); }
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeMenu(); });
+
+/* =================== INÍCIO =================== */
+applyTheme();
+buildNav();
+MODS.forEach(setupModule);
+Object.keys(GERAL).forEach(setupGeral);
+show('inicio');
+})();
+</script>
+</body>
+</html>
