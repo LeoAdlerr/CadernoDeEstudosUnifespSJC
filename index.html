@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cadernos de Estudos — UNIFESP SJC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef2f6; --surface: #ffffff; --surface2: #f5f7fb; --ink: #16213a;
+    --muted: #56617a; --line: #d5dde8; --accent: #1d3fa3; --accent-ink: #ffffff;
+    --accent-soft: #e6ecfa; --grid: rgba(29,63,163,.09); --margin: #e58f8a;
+    --sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  :root[data-theme="dark"] {
+    --bg: #101915; --surface: #17231e; --surface2: #1d2b25; --ink: #eceee6;
+    --muted: #a2b0a8; --line: #2d3e36; --accent: #9dc1ff; --accent-ink: #0d1a2e;
+    --accent-soft: #1c2c3d; --grid: rgba(236,238,230,.055); --margin: #7a4744;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.6 var(--sans); background: var(--bg); color: var(--ink); }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 72px; }
+  .hero {
+    position: relative; padding: 28px 24px 24px 44px; border: 1px solid var(--line);
+    border-radius: 14px; overflow: hidden; margin-bottom: 24px;
+    background: linear-gradient(var(--grid) 1px, transparent 1px) 0 0/100% 22px,
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/22px 100%, var(--surface);
+  }
+  .hero::before { content: ""; position: absolute; left: 26px; top: 0; bottom: 0; width: 2px; background: var(--margin); }
+  .hero-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .hero h1 { margin: 0 0 6px; font-size: clamp(24px, 4vw, 34px); font-weight: 800; letter-spacing: -.03em; }
+  .hero p { margin: 0; color: var(--muted); max-width: 60ch; }
+  .theme-btn {
+    width: 38px; height: 38px; border-radius: 9px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink); cursor: pointer; font-size: 17px; flex: none;
+  }
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    border-radius: 99px; padding: 6px 14px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .chip.on, .chip:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .group { margin-bottom: 28px; }
+  .group h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .card {
+    display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: inherit;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px;
+    transition: border-color .15s, transform .15s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .tag {
+    align-self: flex-start; font-size: 12px; font-weight: 700;
+    color: var(--accent); background: var(--accent-soft); padding: 2px 9px; border-radius: 99px;
+  }
+  .card h3 { margin: 2px 0 0; font-size: 17px; line-height: 1.3; }
+  .card p { margin: 0; font-size: 14px; color: var(--muted); flex: 1; }
+  .open { font-size: 13.5px; font-weight: 600; color: var(--accent); margin-top: 6px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>Cadernos de Estudos — UNIFESP SJC</h1>
+          <p>Central de cadernos interativos separados por matéria. Seu progresso fica salvo automaticamente neste navegador.</p>
+        </div>
+        <button class="theme-btn" id="themeBtn" title="Alternar tema" aria-label="Alternar tema">◐</button>
+      </div>
+    </header>
+
+    <div class="filters" id="filters"></div>
+    <main id="lista"></main>
+  </div>
+
+<script>
+  // EDITE AQUI: coloque o nome EXATO dos seus arquivos .html no repositório
+  const CADERNOS = [
+    {
+      materia: "Matemática",
+      titulo: "Pré-Cálculo",
+      descricao: "Álgebra, funções, logaritmos, trigonometria analítica e geometria analítica para Cálculo I.",
+      arquivo: "caderno-pre-calculo_2.html"
+    },
+    {
+      materia: "Matéria 2",
+      titulo: "Nome do Caderno 2",
+      descricao: "Breve descrição do conteúdo deste caderno.",
+      arquivo: "caderno-2.html"
+    },
+    {
+      materia: "Matéria 3",
+      titulo: "Nome do Caderno 3",
+      descricao: "Breve descrição do conteúdo deste caderno.",
+      arquivo: "caderno-3.html"
+    }
+  ];
+
+  let filtroAtual = "Todas";
+  const materias = ["Todas", ...new Set(CADERNOS.map(c => c.materia))];
+
+  function render() {
+    document.getElementById("filters").innerHTML = materias.map(m =>
+      `<button class="chip ${m === filtroAtual ? "on" : ""}" data-m="${m}">${m}</button>`
+    ).join("");
+
+    const grupos = {};
+    CADERNOS
+      .filter(c => filtroAtual === "Todas" || c.materia === filtroAtual)
+      .forEach(c => { (grupos[c.materia] ||= []).push(c); });
+
+    document.getElementById("lista").innerHTML = Object.entries(grupos).map(([mat, itens]) => `
+      <section class="group">
+        <h2>${mat}</h2>
+        <div class="grid">
+          ${itens.map(c => `
+            <a class="card" href="${encodeURI(c.arquivo)}">
+              <span class="tag">${c.materia}</span>
+              <h3>${c.titulo}</h3>
+              <p>${c.descricao}</p>
+              <span class="open">Abrir caderno →</span>
+            </a>
+          `).join("")}
+        </div>
+      </section>
+    `).join("");
+  }
+
+  document.getElementById("filters").addEventListener("click", e => {
+    const btn = e.target.closest("[data-m]");
+    if (!btn) return;
+    filtroAtual = btn.dataset.m;
+    render();
+  });
+
+  // Tema claro/escuro sincronizado
+  const savedTheme = localStorage.getItem("portal-unifesp-theme");
+  if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem("portal-unifesp-theme", next);
+  });
+
+  render();
+</script>
+</body>
+</html>
