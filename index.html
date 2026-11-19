@@ -77,25 +77,24 @@
   </div>
 
 <script>
-  // EDITE AQUI: coloque o nome EXATO dos seus arquivos .html no repositório
   const CADERNOS = [
     {
       materia: "Matemática",
       titulo: "Pré-Cálculo",
       descricao: "Álgebra, funções, logaritmos, trigonometria analítica e geometria analítica para Cálculo I.",
-      arquivo: "caderno-pre-calculo_2.html"
+      arquivo: "caderno-pre-calculo.html"
     },
     {
-      materia: "Matéria 2",
-      titulo: "Nome do Caderno 2",
-      descricao: "Breve descrição do conteúdo deste caderno.",
-      arquivo: "caderno-2.html"
+      materia: "Computação",
+      titulo: "AED I — Revisão P2",
+      descricao: "Caderno interativo de revisão para a P2 de Algoritmos e Estruturas de Dados I.",
+      arquivo: "aed1-revisao-p2.html"
     },
     {
-      materia: "Matéria 3",
-      titulo: "Nome do Caderno 3",
-      descricao: "Breve descrição do conteúdo deste caderno.",
-      arquivo: "caderno-3.html"
+      materia: "Física",
+      titulo: "Fenômenos Mecânicos — P3",
+      descricao: "Livro-caderno de estudos e revisão para a P3 de Fenômenos Mecânicos (FEMEC).",
+      arquivo: "livro-caderno-femec-p3.html"
     }
   ];
 
@@ -136,7 +135,6 @@
     render();
   });
 
-  // Tema claro/escuro sincronizado
   const savedTheme = localStorage.getItem("portal-unifesp-theme");
   if (savedTheme) document.documentElement.dataset.theme = savedTheme;
   document.getElementById("themeBtn").addEventListener("click", () => {
