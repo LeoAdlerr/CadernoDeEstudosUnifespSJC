@@ -258,6 +258,33 @@ figcaption{font-size:13.5px;color:var(--muted);margin-top:4px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
+  <!-- Botão Voltar ao Portal de Cadernos -->
+<a href="index.html" id="btn-voltar-portal" aria-label="Voltar para a lista de cadernos">
+  ← Cadernos
+</a>
+<style>
+  #btn-voltar-portal {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 9999;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 14px;
+    border-radius: 999px;
+    background: #1d3fa3;
+    color: #ffffff;
+    font: 600 13.5px/1 Inter, system-ui, -apple-system, sans-serif;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .22);
+    transition: transform .15s, filter .15s;
+  }
+  #btn-voltar-portal:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.12);
+  }
+</style>
 <body>
 <div class="app">
   <aside class="side" id="side" aria-label="Navegação do caderno">
